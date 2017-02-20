@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+    <link rel="stylesheet" href="/assets/main.css">
+  </head>
+  <body>
+    <nav class="navbar navbar-toggleable-md navbar-inverse bg-inverse fixed-top">
+      <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <a class="navbar-brand" href="#">Pilosa</a>
+
+      <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="#">Query <span class="sr-only">(current)</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/stats">Cluster Status</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <div class="container">
+      <div class="input-bar">
+        <div class="btn-group controls">
+          <div class="dropdown">
+              <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Operation
+              </button>
+              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#setbit-modal" data-operation="SetBit">SetBit</a>
+                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#setbit-modal" data-operation="ClearBit">ClearBit</a>
+                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#setbitmapattrs-modal" data-operation="SetBitmapAttrs">SetBitmapAttrs</a>
+                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#bitmap-modal" data-operation="Bitmap">Bitmap</a>
+                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#union-modal" data-operation="Union">Union</a>
+                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#union-modal" data-operation="Intersect">Intersect</a>
+                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#union-modal" data-operation="Difference">Difference</a>
+                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#union-modal" data-operation="Count">Count</a>
+                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#range-modal" data-operation="Range">Range</a>
+                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#topn-modal" data-operation="TopN">TopN</a>
+              </div>
+            </div>
+          <div class="dropdown">
+              <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Database
+              </button>
+              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item" href="#">1</a>
+                <a class="dropdown-item" href="#">2</a>
+              </div>
+            </div>
+          </div>
+        <textarea class="input-textarea"></textarea>
+      </div>
+    </div>
+    <div class="container output"></div>
+
+    <!-- Modals -->
+
+    <div class="modal fade" id="setbit-modal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">SetBit</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <form name="setbit-form" method="POST" id="setbit-form" action="#setbit">
+            <input type="hidden" name="operation" value="SetBit">
+            <div class="modal-body">
+                <div class="form-group">
+                  <label for="setbit-bitmap-id" class="form-control-label">Bitmap ID:</label>
+                  <input type="text" class="form-control" id="setbit-bitmap-id" name="bitmap-id">
+                </div>
+                <div class="form-group">
+                  <label for="frame" class="form-control-label">Frame:</label>
+                  <select class="custom-select" id="setbit-frame" name="frame">
+                    <option selected>foo</option>
+                    <option value="1">bar</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="profile-id" class="form-control-label">Profile ID:</label>
+                  <input type="text" class="form-control" id="setbit-profile-id" name="profile-id">
+                </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Insert</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="setbitmapattrs-modal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">SetBitmapAttrs</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <form name="setbitmapattrs-form" method="POST" id="setbitmapattrs-form" action="#setbitmapattrs">
+            <input type="hidden" name="operation" value="SetBitmapAttrs">
+            <div class="modal-body">
+                <div class="form-group">
+                  <label for="setbitmapattrs-bitmap-id" class="form-control-label">Bitmap ID:</label>
+                  <input type="text" class="form-control" id="setbitmapattrs-bitmap-id" name="bitmap-id">
+                </div>
+                <div class="form-group">
+                  <label for="frame" class="form-control-label">Frame:</label>
+                  <select class="custom-select" id="setbitmapattrs-frame" name="frame">
+                    <option selected>foo</option>
+                    <option value="1">bar</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="kv1" class="form-control-label">Key/value pair (key="value"):</label>
+                  <input type="text" class="form-control" name="kv1">
+                </div>
+                <button type="button" class="btn btn-default btn-sm">+</button>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Insert</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="bitmap-modal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Bitmap</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <form name="bitmap-form" method="POST" id="bitmap-form" action="#bitmap">
+            <input type="hidden" name="operation" value="Bitmap">
+            <div class="modal-body">
+                <div class="form-group">
+                  <label for="bitmap-bitmap-id" class="form-control-label">Bitmap ID:</label>
+                  <input type="text" class="form-control" id="bitmap-bitmap-id" name="bitmap-id">
+                </div>
+                <div class="form-group">
+                  <label for="frame" class="form-control-label">Frame:</label>
+                  <select class="custom-select" id="bitmap-frame" name="frame">
+                    <option selected>foo</option>
+                    <option value="1">bar</option>
+                  </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Insert</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="union-modal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Union</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <form name="union-form" method="POST" id="union-form" action="#union">
+            <input type="hidden" name="operation" value="Union">
+            <div class="modal-body">
+                <div class="form-group">
+                  <label for="union-bitmap" class="form-control-label">Bitmap:</label>
+                  <input type="text" class="form-control" id="union-bitmap" name="bitmap">
+                </div>
+                <button type="button" class="btn btn-default btn-sm">+</button>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Insert</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="range-modal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Range</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <form name="range-form" method="POST" id="range-form" action="#range">
+            <input type="hidden" name="operation" value="Range">
+            <div class="modal-body">
+                <div class="form-group">
+                  <label for="range-bitmap-id" class="form-control-label">Bitmap ID:</label>
+                  <input type="text" class="form-control" id="range-bitmap-id" name="bitmap-id">
+                </div>
+                <div class="form-group">
+                  <label for="frame" class="form-control-label">Frame:</label>
+                  <select class="custom-select" id="range-frame" name="frame">
+                    <option selected>foo</option>
+                    <option value="1">bar</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="range-start" class="form-control-label">Start:</label>
+                  <input type="text" class="form-control" id="range-start" name="start">
+                </div>
+                <div class="form-group">
+                  <label for="range-end" class="form-control-label">Start:</label>
+                  <input type="text" class="form-control" id="range-end" name="end">
+                </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Insert</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="topn-modal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Range</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <form name="topn-form" method="POST" id="topn-form" action="#topn">
+            <input type="hidden" name="operation" value="Range">
+            <div class="modal-body">
+                <div class="form-group">
+                  <label for="topn-bitmap" class="form-control-label">Bitmap expression:</label>
+                  <input type="text" class="form-control" id="topn-bitmap" name="bitmap">
+                </div>
+                <div class="form-group">
+                  <label for="frame" class="form-control-label">Frame:</label>
+                  <select class="custom-select" id="topn-frame" name="frame">
+                    <option selected>foo</option>
+                    <option value="1">bar</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="topn-n" class="form-control-label">N:</label>
+                  <input type="text" class="form-control" id="topn-n" name="n">
+                </div>
+                <div class="form-group">
+                  <label for="topn-values" class="form-control-label">Values:</label>
+                  <input type="text" class="form-control" id="topn-values" name="values">
+                </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Insert</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+    <script src="/assets/main.js"></script>
+    <script>
+        startup()
+    </script>
+  </body>
+</html>
