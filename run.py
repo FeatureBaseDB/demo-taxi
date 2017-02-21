@@ -69,7 +69,7 @@ def get_profile_count():
     qs = ''
     bitmapIDs = range(10)
     for i in bitmapIDs:
-        qs += 'Count(Bitmap(id=%s, frame=cabType))' % i
+        qs += 'Count(Bitmap(id=%s, frame=cabType.n))' % i
 
     resp = requests.post(qurl, data=qs)
     data = json.loads(resp.content)
