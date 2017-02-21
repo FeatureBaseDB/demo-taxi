@@ -62,16 +62,19 @@
 								<div class="col-sm-10">
 									<select name="dist_miles.n" form="intersectForm" class="form-control" id="distance" onchange="$(this.form).trigger('submit')">
 										<option></option>
-										<option>0</option>
-										<option>1</option>
-										<option>2</option>
-										<option>3</option>
-										<option>4</option>
-										<option>5</option>
-										<option>6</option>
-										<option>7</option>
-										<option>8</option>
-										<option>9</option>
+										<option value=5>5 mi</option>
+										<option value=10>10 mi</option>
+										<option value=11>11 mi</option>
+										<option value=12>12 mi</option>
+										<option value=13>13 mi</option>
+										<option value=14>14 mi</option>
+										<option value=15>15 mi</option>
+										<option value=20>20 mi</option>
+										<option value=25>25 mi</option>
+										<option value=30>30 mi</option>
+										<option value=45>45 mi</option>
+										<option value=50>50 mi</option>
+										<option value=100>100 mi</option>
 									</select>
 								</div>
 							</div>
@@ -81,16 +84,19 @@
 								<div class="col-sm-10">
 									<select name="duration_minutes.n" form="intersectForm" class="form-control" id="duration_minutes" onchange="$(this.form).trigger('submit')">
 										<option></option>
-										<option>0</option>
-										<option>1</option>
-										<option>2</option>
-										<option>3</option>
-										<option>4</option>
-										<option>5</option>
-										<option>6</option>
-										<option>7</option>
-										<option>8</option>
-										<option>9</option>
+										<option value=5>5 min</option>
+										<option value=10>10 min</option>
+										<option value=11>11 min</option>
+										<option value=12>12 min</option>
+										<option value=13>13 min</option>
+										<option value=14>14 min</option>
+										<option value=15>15 min</option>
+										<option value=20>20 min</option>
+										<option value=25>25 min</option>
+										<option value=30>30 min</option>
+										<option value=45>45 min</option>
+										<option value=50>50 min</option>
+										<option value=60>1 hr</option>
 									</select>
 								</div>
 							</div>
@@ -100,15 +106,19 @@
 								<div class="col-sm-10">
 									<select name="speed_mph.n" form="intersectForm" class="form-control" id="speed_mph" onchange="$(this.form).trigger('submit')">
 										<option></option>
-										<option>0</option>
-										<option>1</option>
-										<option>2</option>
-										<option>3</option>
-										<option>4</option>
-										<option>5</option>
-										<option>6</option>
-										<option>7</option>
-										<option>8</option>
+										<option value=5>5 mph</option>
+										<option value=10>10 mph</option>
+										<option value=11>11 mph</option>
+										<option value=12>12 mph</option>
+										<option value=13>13 mph</option>
+										<option value=14>14 mph</option>
+										<option value=15>15 mph</option>
+										<option value=20>20 mph</option>
+										<option value=25>25 mph</option>
+										<option value=35>35 mph</option>
+										<option value=45>45 mph</option>
+										<option value=50>50 mph</option>
+										<option value=100>100 mph</option>
 										<option>9</option>
 									</select>
 								</div>
@@ -128,7 +138,6 @@
 										<option>6</option>
 										<option>7</option>
 										<option>8</option>
-										<option>9</option>
 									</select>
 								</div>
 							</div>
@@ -138,16 +147,19 @@
 								<div class="col-sm-10">
 									<select name="totalAmount_dollars.n" form="intersectForm" class="form-control" id="totalAmount_dollars" onchange="$(this.form).trigger('submit')">
 										<option></option>
-										<option>0</option>
-										<option>1</option>
-										<option>2</option>
-										<option>3</option>
-										<option>4</option>
-										<option>5</option>
-										<option>6</option>
-										<option>7</option>
-										<option>8</option>
-										<option>9</option>
+										<option value=5>$5</option>
+										<option value=10>$10</option>
+										<option value=11>$11</option>
+										<option value=12>$12</option>
+										<option value=13>$13</option>
+										<option value=14>$14</option>
+										<option value=15>$15</option>
+										<option value=20>$20</option>
+										<option value=25>$25</option>
+										<option value=35>$35</option>
+										<option value=45>$45</option>
+										<option value=50>$50</option>
+										<option value=100>$100</option>
 									</select>
 								</div>
 							</div>
@@ -164,14 +176,16 @@
 								<div class="col-sm-10">
 									<select name="frame" form="topNForm" class="form-control" id="frame" onchange="$(this.form).trigger('submit')">
 										<option></option>
-										<option value="cabType.n">cabType</option>
-										<option value="pickupYear.n">pickupYear</option>
-										<option value="dist_miles.n">dist_miles</option>
-										<option value="duration_minutes.n">duration_minutes</option>
-										<option value="speed_mph.n">speed_mph</option>
-										<option value="passengerCount.n">passengerCount</option>
-										<option value="totalAmount_dollars.n">totalAmount_dollars</option>
-										<option value="pickupGridID.n">pickupGridID</option>
+										<option value="cabType.n">Cab Type</option>
+										<option value="pickupYear.n">Pickup Year</option>
+										<option value="pickupMonth.n">Pickup Month</option>
+										<option value="pickupDay.n">Pickup Day</option>
+										<option value="dist_miles.n">Distance (miles)</option>
+										<option value="duration_minutes.n">Duration (minutes)</option>
+										<option value="speed_mph.n">Speed (mph)</option>
+										<option value="passengerCount.n">Passenger Count</option>
+										<option value="totalAmount_dollars.n">Total Fare (dollars)</option>
+										<option value="pickupGridID.n">Pickup Grid</option>
 									</select>
 								</div>
 							</div>
