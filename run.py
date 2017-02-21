@@ -90,6 +90,7 @@ def intersect():
         'rows': [{'count': sum(counts)}],
         'seconds': t1-t0,
         'description': q,
+        'numProfiles': get_profile_count(),
     }
     return jsonify(result)
 
@@ -114,6 +115,7 @@ def topn():
         'rows': rows,
         'seconds': t1-t0,
         'description': q,
+        'numProfiles': get_profile_count(),
     }
     return jsonify(result)
 
@@ -140,6 +142,7 @@ def predefined1():
         'rows': rows,
         'seconds': t1-t0,
         'description': 'Profile count by cab type (Mark #1)',
+        'numProfiles': get_profile_count(),
     }
 
     return jsonify(result)
@@ -157,6 +160,7 @@ def predefined2():
         'rows': rows,
         'seconds': t1-t0,
         'description': 'average(totalAmount) by passengerCount (Mark #2)',
+        'numProfiles': get_profile_count(),
     }
     return jsonify(result)
 
@@ -197,6 +201,7 @@ def predefined3():
         'rows': rows,
         'seconds': t1-t0,
         'description': 'Profile count by (year, passengerCount) (Mark #3)',
+        'numProfiles': get_profile_count(),
     }
 
     return jsonify(result)
@@ -268,6 +273,7 @@ def predefined4():
         'rows': rows,
         'seconds': t1-t0,
         'description': 'Profile count by (year, passengerCount, tripDistance), ordered by (year, count) (Mark #4)',
+        'numProfiles': get_profile_count(),
     }
 
     return jsonify(result)
