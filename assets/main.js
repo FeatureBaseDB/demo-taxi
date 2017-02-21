@@ -13,6 +13,10 @@ $("#p1").click(function(event) {
     getAndRenderRows('predefined/1', "");
 });
 
+$("#p2").click(function(event) {
+    getAndRenderRows('predefined/2', "");
+});
+
 $("#p3").click(function(event) {
     getAndRenderRows('predefined/3', "");
 });

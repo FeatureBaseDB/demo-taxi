@@ -150,12 +150,27 @@ def predefined1():
 @app.route("/predefined/2")
 def predefined2():
     # avg(total_amount) per passenger_count
-    # requires attribute aggregation for good performance
+    # attribute aggregation might improve performance
 
     t0 = time.time()
-
+    qs = ''
+    pcounts = range(10)
+    for i in pcounts:
+        qs += "TopN(Bitmap(id=%d, frame='passengerCount'), frame=totalAmount_dollars)" % i
+    resp = requests.post(qurl, data=qs)
     t1 = time.time()
+
     rows = []
+    for pcount, topn in zip(pcounts, resp.json()['results']):
+        if not topn:
+            continue
+        wsum = sum([r['count'] * r['key'] for r in topn])
+        count = sum([r['count'] for r in topn])
+        rows.append({
+            'passengerCount': pcount,
+            'average(totalAmount)': float(wsum) / count,
+        })
+
     result = {
         'rows': rows,
         'seconds': t1-t0,
