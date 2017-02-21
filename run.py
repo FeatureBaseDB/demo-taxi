@@ -289,7 +289,7 @@ def predefined4():
         if pct >= pct_thresh:
             break
 
-    rows.sort(key=lambda x: -x['count'])
+    rows.sort(key=lambda x: (-x['pickupYear'], -x['count']))
 
     t1 = time.time()
     result = {
