@@ -29,7 +29,7 @@
 
 					<div class="form-group">
 						<label for="year">Year</label>
-						<select name="pickupYear" form="intersectForm" class="form-control" id="pickupYear">
+						<select name="pickupYear.n" form="intersectForm" class="form-control" id="pickupYear">
 							<option></option>
 							<option>2009</option>
 							<option>2010</option>
@@ -45,7 +45,7 @@
 
 					<div class="form-group">
 						<label for="distance">Distance</label>
-						<select name="dist_miles" form="intersectForm" class="form-control" id="distance">
+						<select name="dist_miles.n" form="intersectForm" class="form-control" id="distance">
 							<option></option>
 							<option>0</option>
 							<option>1</option>
@@ -64,7 +64,7 @@
 
 					<div class="form-group">
 						<label for="duration">Duration</label>
-						<select name="duration_minutes" form="intersectForm" class="form-control" id="duration_minutes">
+						<select name="duration_minutes.n" form="intersectForm" class="form-control" id="duration_minutes">
 							<option></option>
 							<option>0</option>
 							<option>1</option>
@@ -85,7 +85,7 @@
 
 					<div class="form-group">
 						<label for="speed">Speed</label>
-						<select name="speed_mph" form="intersectForm" class="form-control" id="speed_mph">
+						<select name="speed_mph.n" form="intersectForm" class="form-control" id="speed_mph">
 							<option></option>
 							<option>0</option>
 							<option>1</option>
@@ -104,7 +104,7 @@
 
 					<div class="form-group">
 						<label for="passengerCount">Passenger count</label>
-						<select name="passengerCount" form="intersectForm" class="form-control" id="passengerCount">
+						<select name="passengerCount.n" form="intersectForm" class="form-control" id="passengerCount">
 							<option></option>
 							<option>0</option>
 							<option>1</option>
@@ -123,7 +123,7 @@
 
 					<div class="form-group">
 						<label for="totalAmount">Total fare</label>
-						<select name="totalAmount_dollars" form="intersectForm" class="form-control" id="totalAmount_dollars">
+						<select name="totalAmount_dollars.n" form="intersectForm" class="form-control" id="totalAmount_dollars">
 							<option></option>
 							<option>0</option>
 							<option>1</option>
@@ -153,14 +153,15 @@
 			<form action="/query/TopN" method="get" id="topNForm">
 				<label for="topn">TopN query</label><br />
 				<select name="frame" form="topNForm" class="form-control" id="frame">
-					<option>cabType</option>
-					<option>pickupYear</option>
-					<option>dist_miles</option>
-					<option>duration_minutes</option>
-					<option>speed_mph</option>
-					<option>passengerCount</option>
-					<option>totalAmount_dollars</option>
-					<option>pickupGridID</option>
+					<option></option>
+					<option value="cabType.n">cabType</option>
+					<option value="pickupYear.n">pickupYear</option>
+					<option value="dist_miles.n">dist_miles</option>
+					<option value="duration_minutes.n">duration_minutes</option>
+					<option value="speed_mph.n">speed_mph</option>
+					<option value="passengerCount.n">passengerCount</option>
+					<option value="totalAmount_dollars.n">totalAmount_dollars</option>
+					<option value="pickupGridID.n">pickupGridID</option>
 				</select>
 				<button type="button" id="topn" class="btn btn-primary">Submit</button>
 			</form>
