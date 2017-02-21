@@ -112,10 +112,23 @@ def intersect():
     result = {
         'rows': [{'count': sum(counts)}],
         'seconds': t1-t0,
-        'description': q,
+        'description': format_intersect_query(bmps),
         'numProfiles': get_profile_count(),
     }
     return jsonify(result)
+
+def format_intersect_query(bmps):
+    return "Count(Intersect(<br />&nbsp;&nbsp;%s<br />))" % ',<br />&nbsp;&nbsp;'.join(bmps)
+
+
+# there is a mapping bug that makes a few topn results look weird
+# filter out large keys here, pending real fix
+max_key_map = {
+    'speed_mph.n': 100,
+    'duration_minutes.n': 100,
+    'dist_miles.n': 40,
+    'totalAmount_dollars.n': 100,
+}
 
 @app.route("/query/topn")
 def topn():
