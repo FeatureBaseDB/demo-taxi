@@ -8,7 +8,7 @@ from flask import Flask, Response, request, jsonify
 app = Flask(__name__)
 
 pilosa_hosts = ['http://localhost:15000']
-db = 'taxi4'
+db = 'taxi5'
 
 settings = {'hosts': pilosa_hosts}
 qurl = '%s/query?db=%s' % (pilosa_hosts[0], db)
@@ -140,7 +140,7 @@ def predefined1():
     qs = ''
     ctypes = range(10)
     for i in ctypes:
-        qs += 'Count(Bitmap(id=%s, frame=cabType))' % i
+        qs += 'Count(Bitmap(id=%s, frame=cabType.n))' % i
 
     resp = requests.post(qurl, data=qs)
     t1 = time.time()
@@ -167,7 +167,7 @@ def predefined2():
     qs = ''
     pcounts = range(10)
     for i in pcounts:
-        qs += "TopN(Bitmap(id=%d, frame='passengerCount'), frame=totalAmount_dollars)" % i
+        qs += "TopN(Bitmap(id=%d, frame='passengerCount.n'), frame=totalAmount_dollars.n)" % i
     resp = requests.post(qurl, data=qs)
     t1 = time.time()
 
@@ -203,8 +203,8 @@ def predefined3():
     pairs = list(product(years, pcounts))
     for year, pcount in pairs:
         bmps = [
-            "Bitmap(id=%d, frame='pickupYear')" % year,
-            "Bitmap(id=%d, frame='passengerCount')" % pcount,
+            "Bitmap(id=%d, frame='pickupYear.n')" % year,
+            "Bitmap(id=%d, frame='passengerCount.n')" % pcount,
         ]
         qs += "Count(Intersect(%s))" % ', '.join(bmps)
 
@@ -245,9 +245,9 @@ def predefined4():
     dists = range(50)
 
     topns = [
-        "TopN(frame='pickupYear')"
-        "TopN(frame='passengerCount')"
-        "TopN(frame='dist_miles')"
+        "TopN(frame='pickupYear.n')"
+        "TopN(frame='passengerCount.n')"
+        "TopN(frame='dist_miles.n')"
     ]
     qs = ', '.join(topns)
     resp = requests.post(qurl, data=qs)
@@ -271,9 +271,9 @@ def predefined4():
     pct_thresh = 95.0
     for year, pcount, dist, maxcount in cands:
         bmps = [
-            "Bitmap(id=%d, frame='pickupYear')" % year,
-            "Bitmap(id=%d, frame='passengerCount')" % pcount,
-            "Bitmap(id=%d, frame='dist_miles')" % dist,
+            "Bitmap(id=%d, frame='pickupYear.n')" % year,
+            "Bitmap(id=%d, frame='passengerCount.n')" % pcount,
+            "Bitmap(id=%d, frame='dist_miles.n')" % dist,
         ]
         q = "Count(Intersect(%s))" % ', '.join(bmps)
         resp = requests.post(qurl, data=q)
@@ -308,10 +308,10 @@ def predefined4():
 def predefined5():
     # count of pickup locations for the top dropoff location
     t0 = time.time()
-    q = "TopN(frame=dropGridID, n=1)"
+    q = "TopN(frame=dropGridID.n, n=1)"
     res = requests.post(qurl, data=q).json()['results'][0]
     top_dropoff_id = res[0]['key']
-    q = "TopN(Bitmap(frame=dropGridID, id=%d), frame=pickupGridID)" % top_dropoff_id
+    q = "TopN(Bitmap(frame=dropGridID.n, id=%d), frame=pickupGridID.n)" % top_dropoff_id
     resp = requests.post(qurl, data=q)
     t1 = time.time()
     res = resp.json()['results'][0]
