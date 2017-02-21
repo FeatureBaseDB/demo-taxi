@@ -33,9 +33,9 @@ pqurl = '%s/query?db=%s&profiles=true' % (pilosa_hosts[0], db)
 
 # TODO complete this map
 namemap = {
-    'cabType': {
-        'Green': 1,
-        'Yellow': 2,
+    'cabType.n': {
+        'Green': 0,
+        'Yellow': 1,
     },
 }
 
