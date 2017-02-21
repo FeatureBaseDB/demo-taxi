@@ -45,6 +45,8 @@ function getAndRenderRows(url, data) {
         //renderResultsRaw(data['rows'])
         renderResultsAscii(data['rows']);
 
+        clearCanvas();
+
         if(data['rows'].length > 1) {
             renderHistogram(data['rows'])
         }
@@ -74,6 +76,12 @@ function renderResultsAscii(rows) {
 
 function renderResultsDom(rows) {
 // TODO populate some less ugly table rows
+}
+
+function clearCanvas() {
+    $("#canvas").remove()
+    $("#chartjs-hidden-iframe").remove()
+    $("#canvas-container").append("<canvas id='canvas' width='400' height='400'>")
 }
 
 function renderHistogram(rows) {
