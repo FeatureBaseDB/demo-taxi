@@ -5,10 +5,27 @@ from itertools import product
 
 from flask import Flask, Response, request, jsonify
 
+### Config #############################
+import ConfigParser
+Config = ConfigParser.ConfigParser()
+Config.read("demo.cfg")
+section = "Base"
+if section not in Config.sections():
+    pilosahost = "http://localhost:15000"
+    pilosadb = "db"
+    host = "127.0.0.1"
+    port = 5000
+else:
+    pilosahost = Config.get(section, 'pilosahost')
+    pilosadb = Config.get(section, 'pilosadb')
+    host = Config.get(section, 'host')
+    port = Config.get(section, 'port')
+########################################
+
 app = Flask(__name__)
 
-pilosa_hosts = ['http://localhost:15000']
-db = 'taxi5'
+pilosa_hosts = [pilosahost]
+db = pilosadb
 
 settings = {'hosts': pilosa_hosts}
 qurl = '%s/query?db=%s' % (pilosa_hosts[0], db)
@@ -334,4 +351,4 @@ def predefined5():
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host=host, port=port)
