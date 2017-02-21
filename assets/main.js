@@ -80,8 +80,11 @@ function renderHistogram2D(rows) {
 }
 
 function renderHistogram1D(rows) {
-    var ctx = document.getElementById("histogram");
+    // rows is an array of objects with two keys, "count" contains y data, the other one contains x data
+    var canvas = $("#canvas");
+    canvas.removeClass('hidden');
 
+    // figure out the key to use for x data
     keys = Object.keys(rows[0])
     for(var key in rows[0]) {
         if(key != "count") {
@@ -89,10 +92,10 @@ function renderHistogram1D(rows) {
         }
     }
 
+    // sort rows by x value and create arrays
     rows.sort(function(a, b) {
         return a[xkey] - b[xkey];
     });
-
     x=[];
     y=[];
     for(var n=0; n<rows.length; n++) {
@@ -100,7 +103,7 @@ function renderHistogram1D(rows) {
         y.push(rows[n]['count'])
     }
 
-    var myChart = new Chart(ctx, {
+    var myChart = new Chart(canvas, {
         type: 'bar',
         data: {
             labels: x,
