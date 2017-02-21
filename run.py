@@ -99,17 +99,19 @@ def topn():
     frame = request.args['frame']
 
     t0 = time.time()
-    q = "TopN(frame='%s')" % frame
-    resp = requests.post(qurl, data=q)
+    if USE_CLIENT:
+        q = TopN(None, frame=frame, n=1000)
+        resp = client.execute(db, q)
+    else:
+        q = "TopN(frame='%s')" % frame
+        resp = requests.post(qurl, data=q)
     t1 = time.time()
-    res = json.loads(resp.content)['results'][0]
+    res = resp.json()['results'][0]
 
     rows = [{'bitmapID': c['key'], 'count': c['count']} for c in res]
 
     if 'Grid' in frame:
-        for row in rows:
-            row['x'] = row['key'] % 100
-            row['y'] = row['key'] / 100
+        add_grid_coords(rows)
 
     result = {
         'rows': rows,
@@ -118,6 +120,13 @@ def topn():
         'numProfiles': get_profile_count(),
     }
     return jsonify(result)
+
+
+def add_grid_coords(rows, key='bitmapID'):
+    print(rows[0])
+    for row in rows:
+        row['x'] = row[key] % 100
+        row['y'] = row[key] / 100
 
 
 @app.route("/predefined/1")
@@ -292,6 +301,33 @@ def predefined4():
     }
 
     return jsonify(result)
+
+@app.route("/predefined/5")
+def predefined5():
+    # count of pickup locations for the top dropoff location
+    t0 = time.time()
+    q = "TopN(frame=dropGridID, n=1)"
+    res = requests.post(qurl, data=q).json()['results'][0]
+    top_dropoff_id = res[0]['key']
+    q = "TopN(Bitmap(frame=dropGridID, id=%d), frame=pickupGridID)" % top_dropoff_id
+    resp = requests.post(qurl, data=q)
+    t1 = time.time()
+    res = resp.json()['results'][0]
+
+    key = 'pickupGridID'
+    rows = [{key: r['key'], 'count': r['count']} for r in res]
+
+    add_grid_coords(rows, key=key)
+
+    result = {
+        'rows': rows,
+        'seconds': t1-t0,
+        'description': 'Count of pickup locations for top dropoff location',
+        'numProfiles': get_profile_count(),
+    }
+
+    return jsonify(result)
+
 
 
 

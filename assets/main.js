@@ -25,6 +25,11 @@ $("#p4").click(function(event) {
     getAndRenderRows('predefined/4', "");
 });
 
+$("#p5").click(function(event) {
+    getAndRenderRows('predefined/5', "");
+});
+
+
 function getAndRenderRows(url, data) {
     $.ajax({
         url: url,
