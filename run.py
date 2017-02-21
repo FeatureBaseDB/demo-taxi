@@ -7,10 +7,12 @@ from flask import Flask, Response, request, jsonify
 
 app = Flask(__name__)
 
-pilosa_host = 'http://localhost:15000'
+pilosa_hosts = ['http://localhost:15000']
 db = 'taxi4'
-qurl = '%s/query?db=%s' % (pilosa_host, db)
-pqurl = '%s/query?db=%s&profiles=true' % (pilosa_host, db)
+
+settings = {'hosts': pilosa_hosts}
+qurl = '%s/query?db=%s' % (pilosa_hosts[0], db)
+pqurl = '%s/query?db=%s&profiles=true' % (pilosa_hosts[0], db)
 
 # TODO complete this map
 namemap = {
@@ -99,12 +101,8 @@ def topn():
     frame = request.args['frame']
 
     t0 = time.time()
-    if USE_CLIENT:
-        q = TopN(None, frame=frame, n=1000)
-        resp = client.execute(db, q)
-    else:
-        q = "TopN(frame='%s')" % frame
-        resp = requests.post(qurl, data=q)
+    q = "TopN(frame='%s')" % frame
+    resp = requests.post(qurl, data=q)
     t1 = time.time()
     res = resp.json()['results'][0]
 
