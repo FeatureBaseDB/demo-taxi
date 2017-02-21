@@ -140,7 +140,8 @@ def topn():
     t1 = time.time()
     res = resp.json()['results'][0]
 
-    rows = [{'bitmapID': c['key'], 'count': c['count']} for c in res]
+    max_key = max_key_map.get(frame, 1000000)
+    rows = [{'bitmapID': c['key'], 'count': c['count']} for c in res if c['key'] < max_key]
 
     if 'Grid' in frame:
         add_grid_coords(rows)
