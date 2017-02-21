@@ -1,2 +1,3 @@
 flask
 pilosa-driver
+requests

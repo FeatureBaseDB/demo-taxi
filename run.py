@@ -15,18 +15,14 @@ pqurl = '%s/query?db=%s&profiles=true' % (pilosa_host, db)
 # TODO complete this map
 namemap = {
     'cabType': {
-        'green': -1,
-        'yellow': -1,
+        'Green': 1,
+        'Yellow': 2,
     },
 }
 
 @app.route('/')
 def index():
     return open('index.html', 'r').read()
-
-@app.route('/demo')
-def demolinks():
-    return open('demolinks.html', 'r').read()
 
 @app.route('/assets/main.js')
 def js():
@@ -63,14 +59,23 @@ def intersect():
     t0 = time.time()
     bmps = []
     for frame, bitmap in frame_ids.items():
-        if type(bitmap) == str:
-            bitmapid = namemap[frame][bitmap]
-        else:
+        if bitmap == '':
+            continue
+        try:
             bitmapid = int(bitmap)
+        except:
+            bitmapid = namemap[frame][bitmap]
 
         bmps.append("Bitmap(id=%d, frame='%s')" % (bitmapid, frame))
+
     q = "Count(Intersect(%s))" % ', '.join(bmps)
     print(q)
+
+    if bmps == []:
+        # avoid server crash
+        print('empty intersect query!')
+        return jsonify({'error': 'empty intersect query'})
+
     resp = requests.post(qurl, data=q)
     t1 = time.time()
 
@@ -78,8 +83,33 @@ def intersect():
     data = json.loads(resp.content)
     counts = data['results']
     result = {
-        'count': sum(counts),
+        'rows': [{'count': sum(counts)}],
         'seconds': t1-t0,
+        'description': q,
+    }
+    return jsonify(result)
+
+@app.route("/query/topn")
+def topn():
+    frame = request.args['frame']
+
+    t0 = time.time()
+    q = "TopN(frame='%s')" % frame
+    resp = requests.post(qurl, data=q)
+    t1 = time.time()
+    res = json.loads(resp.content)['results'][0]
+
+    rows = [{'bitmapID': c['key'], 'count': c['count']} for c in res]
+
+    if 'Grid' in frame:
+        for row in rows:
+            row['x'] = row['key'] % 100
+            row['y'] = row['key'] / 100
+
+    result = {
+        'rows': rows,
+        'seconds': t1-t0,
+        'description': q,
     }
     return jsonify(result)
 
