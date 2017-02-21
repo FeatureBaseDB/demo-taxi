@@ -38,6 +38,10 @@ def js():
 def css():
     return Response(open('assets/main.css', 'r').read(), mimetype='text/css')
 
+@app.route('/assets/pilosa-logo.png')
+def logo():
+    return Response(open('assets/pilosa-logo.png', 'r').read(), mimetype='image/png')
+
 @app.route("/profiles/count")
 def count_profiles():
     result = {'count': get_profile_count()}

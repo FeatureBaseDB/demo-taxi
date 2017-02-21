@@ -10,196 +10,211 @@
 </head>
 <body>
 	<div class="container">
-		<form id="intersectForm">
-			<label for="intersect">Intersection query</label><br />
+		<img src="/assets/pilosa-logo.png" class="logo"/>
 
-			<div class="row">
-				<div class="col">
+		<div class="container"> 
+			<ul class="nav nav-tabs" role="tablist"> 
+				<li class="nav-item"> 
+					<a class="nav-link active" data-toggle="tab" href="#intersect" role="tab">Intersect</a> 
+				</li> 
+				<li class="nav-item"> 
+					<a class="nav-link" data-toggle="tab" href="#topn" role="tab">TopN</a> 
+				</li> 
+				<li class="nav-item"> 
+					<a class="nav-link" data-toggle="tab" href="#predefined" role="tab">Predefined</a> 
+				</li> 
+			</ul> 
+ 
+			<div class="tab-content"> 
+				<div class="tab-pane active" id="intersect" role="tabpanel"> 
+					<div class="container">
+						<form id="intersectForm" action=".">
 
-					<div class="form-group">
-						<label for="cabType">Cab type</label>
-						<select name="cabType" form="intersectForm" class="form-control" id="cabType">
-							<option></option>
-							<option>Green</option>
-							<option>Yellow</option>
-						</select>
+							<div class="form-group row">
+								<label for="cabType" class="col-sm-2 col-form-label">Cab type</label>
+								<div class="col-sm-10">
+									<select name="cabType" form="intersectForm" class="form-control" id="cabType" onchange="$(this.form).trigger('submit')">
+										<option></option>
+										<option>Green</option>
+										<option>Yellow</option>
+									</select>
+								</div>
+							</div>
+
+							<div class="form-group row">
+								<label for="year" class="col-sm-2 col-form-label">Year</label>
+								<div class="col-sm-10">
+									<select name="pickupYear.n" form="intersectForm" class="form-control" id="pickupYear" onchange="$(this.form).trigger('submit')">
+										<option></option>
+										<option>2009</option>
+										<option>2010</option>
+										<option>2011</option>
+										<option>2012</option>
+										<option>2013</option>
+										<option>2014</option>
+										<option>2015</option>
+									</select>
+								</div>
+							</div>
+				
+							<div class="form-group row">
+								<label for="distance" class="col-sm-2 col-form-label">Distance</label>
+								<div class="col-sm-10">
+									<select name="dist_miles.n" form="intersectForm" class="form-control" id="distance" onchange="$(this.form).trigger('submit')">
+										<option></option>
+										<option>0</option>
+										<option>1</option>
+										<option>2</option>
+										<option>3</option>
+										<option>4</option>
+										<option>5</option>
+										<option>6</option>
+										<option>7</option>
+										<option>8</option>
+										<option>9</option>
+									</select>
+								</div>
+							</div>
+
+							<div class="form-group row">
+								<label for="duration" class="col-sm-2 col-form-label">Duration</label>
+								<div class="col-sm-10">
+									<select name="duration_minutes.n" form="intersectForm" class="form-control" id="duration_minutes" onchange="$(this.form).trigger('submit')">
+										<option></option>
+										<option>0</option>
+										<option>1</option>
+										<option>2</option>
+										<option>3</option>
+										<option>4</option>
+										<option>5</option>
+										<option>6</option>
+										<option>7</option>
+										<option>8</option>
+										<option>9</option>
+									</select>
+								</div>
+							</div>
+
+							<div class="form-group row">
+								<label for="speed" class="col-sm-2 col-form-label">Speed</label>
+								<div class="col-sm-10">
+									<select name="speed_mph.n" form="intersectForm" class="form-control" id="speed_mph" onchange="$(this.form).trigger('submit')">
+										<option></option>
+										<option>0</option>
+										<option>1</option>
+										<option>2</option>
+										<option>3</option>
+										<option>4</option>
+										<option>5</option>
+										<option>6</option>
+										<option>7</option>
+										<option>8</option>
+										<option>9</option>
+									</select>
+								</div>
+							</div>
+
+							<div class="form-group row">
+								<label for="passengerCount" class="col-sm-2 col-form-label">Passenger count</label>
+								<div class="col-sm-10">
+									<select name="passengerCount.n" form="intersectForm" class="form-control" id="passengerCount" onchange="$(this.form).trigger('submit')">
+										<option></option>
+										<option>0</option>
+										<option>1</option>
+										<option>2</option>
+										<option>3</option>
+										<option>4</option>
+										<option>5</option>
+										<option>6</option>
+										<option>7</option>
+										<option>8</option>
+										<option>9</option>
+									</select>
+								</div>
+							</div>
+
+							<div class="form-group row">
+								<label for="totalAmount" class="col-sm-2 col-form-label">Total fare</label>
+								<div class="col-sm-10">
+									<select name="totalAmount_dollars.n" form="intersectForm" class="form-control" id="totalAmount_dollars" onchange="$(this.form).trigger('submit')">
+										<option></option>
+										<option>0</option>
+										<option>1</option>
+										<option>2</option>
+										<option>3</option>
+										<option>4</option>
+										<option>5</option>
+										<option>6</option>
+										<option>7</option>
+										<option>8</option>
+										<option>9</option>
+									</select>
+								</div>
+							</div>
+
+						</form>
 					</div>
-				</div>
-				<div class="col">
+				</div> 
 
-					<div class="form-group">
-						<label for="year">Year</label>
-						<select name="pickupYear.n" form="intersectForm" class="form-control" id="pickupYear">
-							<option></option>
-							<option>2009</option>
-							<option>2010</option>
-							<option>2011</option>
-							<option>2012</option>
-							<option>2013</option>
-							<option>2014</option>
-							<option>2015</option>
-						</select>
-					</div>
-				</div>
-				<div class="col">
-
-					<div class="form-group">
-						<label for="distance">Distance</label>
-						<select name="dist_miles.n" form="intersectForm" class="form-control" id="distance">
-							<option></option>
-							<option>0</option>
-							<option>1</option>
-							<option>2</option>
-							<option>3</option>
-							<option>4</option>
-							<option>5</option>
-							<option>6</option>
-							<option>7</option>
-							<option>8</option>
-							<option>9</option>
-						</select>
-					</div>
-				</div>
-				<div class="col">
-
-					<div class="form-group">
-						<label for="duration">Duration</label>
-						<select name="duration_minutes.n" form="intersectForm" class="form-control" id="duration_minutes">
-							<option></option>
-							<option>0</option>
-							<option>1</option>
-							<option>2</option>
-							<option>3</option>
-							<option>4</option>
-							<option>5</option>
-							<option>6</option>
-							<option>7</option>
-							<option>8</option>
-							<option>9</option>
-						</select>
-					</div>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col">
-
-					<div class="form-group">
-						<label for="speed">Speed</label>
-						<select name="speed_mph.n" form="intersectForm" class="form-control" id="speed_mph">
-							<option></option>
-							<option>0</option>
-							<option>1</option>
-							<option>2</option>
-							<option>3</option>
-							<option>4</option>
-							<option>5</option>
-							<option>6</option>
-							<option>7</option>
-							<option>8</option>
-							<option>9</option>
-						</select>
-					</div>
-				</div>
-				<div class="col">
-
-					<div class="form-group">
-						<label for="passengerCount">Passenger count</label>
-						<select name="passengerCount.n" form="intersectForm" class="form-control" id="passengerCount">
-							<option></option>
-							<option>0</option>
-							<option>1</option>
-							<option>2</option>
-							<option>3</option>
-							<option>4</option>
-							<option>5</option>
-							<option>6</option>
-							<option>7</option>
-							<option>8</option>
-							<option>9</option>
-						</select>
-					</div>
-				</div>
-				<div class="col">
-
-					<div class="form-group">
-						<label for="totalAmount">Total fare</label>
-						<select name="totalAmount_dollars.n" form="intersectForm" class="form-control" id="totalAmount_dollars">
-							<option></option>
-							<option>0</option>
-							<option>1</option>
-							<option>2</option>
-							<option>3</option>
-							<option>4</option>
-							<option>5</option>
-							<option>6</option>
-							<option>7</option>
-							<option>8</option>
-							<option>9</option>
-						</select>
+				<div class="tab-pane" id="topn" role="tabpanel"> 
+					<div class="container">
+						<form action="/query/TopN" action="." method="get" id="topNForm">
+							<div class="form-group row">
+								<label for="topn" class="col-sm-2 col-form-label">TopN query</label><br />
+								<div class="col-sm-10">
+									<select name="frame" form="topNForm" class="form-control" id="frame" onchange="$(this.form).trigger('submit')">
+										<option></option>
+										<option value="cabType.n">cabType</option>
+										<option value="pickupYear.n">pickupYear</option>
+										<option value="dist_miles.n">dist_miles</option>
+										<option value="duration_minutes.n">duration_minutes</option>
+										<option value="speed_mph.n">speed_mph</option>
+										<option value="passengerCount.n">passengerCount</option>
+										<option value="totalAmount_dollars.n">totalAmount_dollars</option>
+										<option value="pickupGridID.n">pickupGridID</option>
+									</select>
+								</div>
+							</div>
+						</form>
 					</div>
 
-				</div>
-				<div class="col">
-				</div>
+				</div> 
+				<div class="tab-pane" id="predefined" role="tabpanel"> 
 
-				<button type="button" id="intersect" class="btn btn-primary">Submit</button>
+					<div class="container row">
+						<form id="predefinedForm-1">
+							<button type="button" id="p1" class="btn btn-primary">Benchmark query #1</button>	
+						</form>
+					</div>
 
-			</form>
+					<div class="container row">
+						<form id="predefinedForm-2">
+							<button type="button" id="p2" class="btn btn-primary">Benchmark query #2 (approximate)</button>	
+						</form>
+					</div>
+
+					<div class="container row">
+						<form id="predefinedForm-3">
+							<button type="button" id="p3" class="btn btn-primary">Benchmark query #3</button>	
+						</form>
+					</div>
+
+					<div class="container row">
+						<form id="predefinedForm-4">
+							<button type="button" id="p4" class="btn btn-primary">Benchmark query #4</button>	
+						</form>
+					</div>
+
+					<div class="container row">
+						<form id="predefinedForm-5">
+							<button type="button" id="p5" class="btn btn-primary">Benchmark query #5</button>
+						</form>
+					</div>
+
+				</div> 
+			</div> 
 		</div>
 
-		<hr>
-
-		<div class="container">
-			<form action="/query/TopN" method="get" id="topNForm">
-				<label for="topn">TopN query</label><br />
-				<select name="frame" form="topNForm" class="form-control" id="frame">
-					<option></option>
-					<option value="cabType.n">cabType</option>
-					<option value="pickupYear.n">pickupYear</option>
-					<option value="dist_miles.n">dist_miles</option>
-					<option value="duration_minutes.n">duration_minutes</option>
-					<option value="speed_mph.n">speed_mph</option>
-					<option value="passengerCount.n">passengerCount</option>
-					<option value="totalAmount_dollars.n">totalAmount_dollars</option>
-					<option value="pickupGridID.n">pickupGridID</option>
-				</select>
-				<button type="button" id="topn" class="btn btn-primary">Submit</button>
-			</form>
-		</div>
-
-		<hr>
-
-		<div class="container">
-			<form id="predefinedForm-1">
-				<button type="button" id="p1" class="btn btn-primary">Benchmark query #1</button>	
-			</form>
-		</div>
-
-		<div class="container">
-			<form id="predefinedForm-2">
-				<button type="button" id="p2" class="btn btn-primary">Benchmark query #2 (approximate)</button>	
-			</form>
-		</div>
-
-		<div class="container">
-			<form id="predefinedForm-3">
-				<button type="button" id="p3" class="btn btn-primary">Benchmark query #3</button>	
-			</form>
-		</div>
-
-		<div class="container">
-			<form id="predefinedForm-4">
-				<button type="button" id="p4" class="btn btn-primary">Benchmark query #4</button>	
-			</form>
-		</div>
-
-		<div class="container">
-			<form id="predefinedForm-5">
-				<button type="button" id="p5" class="btn btn-primary">Benchmark query #5</button>
-			</form>
-		</div>
-
-		<hr>
 
 		<div class="row">
 			<div class="col">

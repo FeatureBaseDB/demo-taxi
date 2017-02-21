@@ -1,12 +1,13 @@
-$("#intersect").click(function(event) {
+$("#intersectForm").bind('submit', function(event) {
+    event.preventDefault();
     data = $('#intersectForm').serialize()
     getAndRenderRows('query/intersect', data)
 });
 
-$("#topn").click(function(event) {
+$("#topn").bind('submit', function(event) {
+    event.preventDefault();
     data = $('#topNForm').serialize()
     getAndRenderRows('query/topn', data)
-
 });
 
 $("#p1").click(function(event) {
