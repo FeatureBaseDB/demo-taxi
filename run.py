@@ -34,8 +34,8 @@ pqurl = '%s/query?db=%s&profiles=true' % (pilosa_hosts[0], db)
 # TODO complete this map
 namemap = {
     'cabType.n': {
-        'Green': 1,
-        'Yellow': 2,
+        'Green': 0,
+        'Yellow': 1,
     },
 }
 
@@ -112,10 +112,23 @@ def intersect():
     result = {
         'rows': [{'count': sum(counts)}],
         'seconds': t1-t0,
-        'query': q,
+        'query': format_intersect_query(bmps),
         'numProfiles': get_profile_count(),
     }
     return jsonify(result)
+
+def format_intersect_query(bmps):
+    return "Count(Intersect(<br />&nbsp;&nbsp;%s<br />))" % ',<br />&nbsp;&nbsp;'.join(bmps)
+
+
+# there is a mapping bug that makes a few topn results look weird
+# filter out large keys here, pending real fix
+max_key_map = {
+    'speed_mph.n': 100,
+    'duration_minutes.n': 100,
+    'dist_miles.n': 40,
+    'totalAmount_dollars.n': 100,
+}
 
 @app.route("/query/topn")
 def topn():
@@ -129,7 +142,8 @@ def topn():
     t1 = time.time()
     res = resp.json()['results'][0]
 
-    rows = [{'bitmapID': c['key'], 'count': c['count']} for c in res]
+    max_key = max_key_map.get(frame, 1000000)
+    rows = [{'bitmapID': c['key'], 'count': c['count']} for c in res if c['key'] < max_key]
 
     if 'Grid' in frame:
         add_grid_coords(rows)

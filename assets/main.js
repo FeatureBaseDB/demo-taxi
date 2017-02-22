@@ -132,10 +132,12 @@ function getAndRenderRows(url, data) {
         success: function(data) {
             console.log(data)
             $("#time").text(data['seconds'].toString().substring(0,5) + ' sec');
-            $("#description").text(data['description']);
+            $("#description").html(data['description']);
             $("#profiles").text(data['numProfiles'] + ' total profiles');
         //renderResultsRaw(data['rows'])
         renderResultsAscii(data['rows']);
+
+        clearCanvas();
 
         if(data['rows'].length > 1) {
             renderHistogram(data['rows']);
