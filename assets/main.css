@@ -49,8 +49,6 @@ a {
     margin-top: 10px;
 }
 
-.table .
-
 .table > thead {
     font-weight: normal;
 }
@@ -63,4 +61,10 @@ a {
 
 .result-value {
     font-weight: normal;
+}
+
+.result-query {
+    font-family: inconsolata, monospace;
+    font-weight: bold;
+    background-color: rgb(214, 213, 209);
 }

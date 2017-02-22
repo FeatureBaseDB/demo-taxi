@@ -45,7 +45,7 @@ $("#topn").bind('submit', function(event) {
 function clearTopNCanvas() {
     $("#topn-canvas").remove();
     $("#chartjs-hidden-iframe").remove();
-    $("#topn-canvas-container").append("<canvas id='topn-canvas' width='400' height='400'>");
+    $("#topn-canvas-container").append("<canvas id='topn-canvas' width='200' height='200'>");
 }
 
 function clearPredefinedCanvas() {
