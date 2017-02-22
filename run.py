@@ -33,7 +33,7 @@ pqurl = '%s/query?db=%s&profiles=true' % (pilosa_hosts[0], db)
 
 # TODO complete this map
 namemap = {
-    'cabType': {
+    'cabType.n': {
         'Green': 1,
         'Yellow': 2,
     },
@@ -69,7 +69,7 @@ def get_profile_count():
     qs = ''
     bitmapIDs = range(10)
     for i in bitmapIDs:
-        qs += 'Count(Bitmap(id=%s, frame=cabType))' % i
+        qs += 'Count(Bitmap(id=%s, frame=cabType.n))' % i
 
     resp = requests.post(qurl, data=qs)
     data = json.loads(resp.content)
@@ -112,7 +112,7 @@ def intersect():
     result = {
         'rows': [{'count': sum(counts)}],
         'seconds': t1-t0,
-        'description': q,
+        'query': q,
         'numProfiles': get_profile_count(),
     }
     return jsonify(result)
@@ -120,6 +120,8 @@ def intersect():
 @app.route("/query/topn")
 def topn():
     frame = request.args['frame']
+    if frame == '':
+        return jsonify({'error': 'empty topn query'})
 
     t0 = time.time()
     q = "TopN(frame='%s')" % frame
@@ -135,7 +137,7 @@ def topn():
     result = {
         'rows': rows,
         'seconds': t1-t0,
-        'description': q,
+        'query': q,
         'numProfiles': get_profile_count(),
     }
     return jsonify(result)

@@ -33,7 +33,7 @@
 							<div class="form-group row">
 								<label for="cabType" class="col-sm-2 col-form-label">Cab type</label>
 								<div class="col-sm-10">
-									<select name="cabType" form="intersectForm" class="form-control" id="cabType" onchange="$(this.form).trigger('submit')">
+									<select name="cabType.n" form="intersectForm" class="form-control" id="cabType" onchange="$(this.form).trigger('submit')">
 										<option></option>
 										<option>Green</option>
 										<option>Yellow</option>
@@ -165,6 +165,26 @@
 
 						</form>
 					</div>
+					<hr/>
+					<div id="intersectResults" class="container" style="display:none">
+						<h3>Results</h3>
+						<div class="row">
+							<div class="col-sm-2">Query</div>
+							<div id="intersect-result-query" class="col-sm-10"></div>
+						</div>
+						<div class="row">
+							<div class="col-sm-2">Latency</div>
+							<div id="intersect-result-latency" class="col-sm-10"></div>
+						</div>
+						<div class="row">
+							<div class="col-sm-2">Count</div>
+							<div id="intersect-result-count" class="col-sm-10"></div>
+						</div>
+						<div class="row">
+							<div class="col-sm-2">Total</div>
+							<div id="intersect-result-total" class="col-sm-10"></div>
+						</div>
+					</div> 
 				</div> 
 
 				<div class="tab-pane" id="topn" role="tabpanel"> 
@@ -190,6 +210,27 @@
 							</div>
 						</form>
 					</div>
+
+					<hr/>
+					<div id="topnResults" class="container" style="display:none">
+						<h3>Results</h3>
+						<div class="row">
+							<div class="col-sm-2">Query</div>
+							<div id="topn-result-query" class="col-sm-10"></div>
+						</div>
+						<div class="row">
+							<div class="col-sm-2">Latency</div>
+							<div id="topn-result-latency" class="col-sm-10"></div>
+						</div>
+						<div class="row">
+							<div class="col-sm-2">Total</div>
+							<div id="topn-result-total" class="col-sm-10"></div>
+						</div>
+						<div class="row table-container">
+							<div class="col-sm-2"></div>
+							<div id="topn-result-table" class="col-sm-10"></div>
+						</div>
+					</div> 
 
 				</div> 
 				<div class="tab-pane" id="predefined" role="tabpanel"> 
