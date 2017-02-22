@@ -198,6 +198,7 @@ def predefined1():
         'description': 'Profile count by cab type (Mark #1)',
         'numProfiles': get_profile_count(),
     }
+    print('predefined 1: %.2f sec' % (t1-t0))
 
     return jsonify(result)
 
@@ -216,6 +217,7 @@ def predefined2():
 
     rows = []
     for pcount, topn in zip(pcounts, resp.json()['results']):
+        print('computing average for pcount=%d, %d vals' % (pcount, len(topn)))
         if not topn:
             continue
         wsum = sum([r['count'] * r['key'] for r in topn])
@@ -231,6 +233,7 @@ def predefined2():
         'description': 'average(totalAmount) by passengerCount (Mark #2)',
         'numProfiles': get_profile_count(),
     }
+    print('predefined 2: %.2f sec' % (t1-t0))
     return jsonify(result)
 
 @app.route("/predefined/3")
@@ -272,6 +275,7 @@ def predefined3():
         'description': 'Profile count by (year, passengerCount) (Mark #3)',
         'numProfiles': get_profile_count(),
     }
+    print('predefined 3: %.2f sec' % (t1-t0))
 
     return jsonify(result)
 
@@ -295,6 +299,8 @@ def predefined4():
     qs = ', '.join(topns)
     resp = requests.post(qurl, data=qs)
     res = json.loads(resp.content)['results']
+
+    t1 = time.time()
 
     # assemble TopN results into candidates
     year_keycounts = [(x['key'], x['count']) for x in res[0]]
@@ -330,19 +336,24 @@ def predefined4():
         })
 
         pct = (100.*total)/num_profiles
+        print('%d. %.2f%% (max %.2f%%)' % (n, pct, pct_thresh))
         if pct >= pct_thresh:
             break
 
+        n += 1
+
     rows.sort(key=lambda x: (-x['pickupYear'], -x['count']))
 
-    t1 = time.time()
+    t2 = time.time()
     result = {
         'percentageThreshold': pct_thresh,
         'rows': rows,
-        'seconds': t1-t0,
+        'seconds': t2-t0,
         'description': 'Profile count by (year, passengerCount, tripDistance), ordered by (year, count) (Mark #4)',
         'numProfiles': get_profile_count(),
     }
+
+    print('predefined 4: %.2f + %.2f = %.2f sec' % (t1-t0, t2-t1, t2-t0))
 
     return jsonify(result)
 
