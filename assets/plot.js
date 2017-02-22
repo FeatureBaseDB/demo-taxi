@@ -1,6 +1,6 @@
 function hist1D(d, xkey, selector) {
   console.log("hist1d enter")
-  var margin = {top: 20, right: 90, bottom: 25, left: 25},
+  var margin = {top: 20, right: 90, bottom: 25, left: 70},
   width = 470 - margin.left - margin.right,
   height = 400 - margin.top - margin.bottom;
 
@@ -37,6 +37,30 @@ function hist1D(d, xkey, selector) {
   .attr("width", barWidth-1)
   .attr("y", function(d) { return y(d.count); })
   .attr("height", function(d) { return height - y(d.count); });
+
+  svg.append("g")
+  .attr("class", "x axis")
+  .attr("transform", "translate(0," + height + ")")
+  .call(d3.svg.axis().scale(x).orient("bottom"))
+  .append("text")
+  .attr("class", "label")
+  .attr("x", width)
+  .attr("y", -6)
+  .attr("text-anchor", "end")
+  .text("Bitmap ID");
+
+  // Add a y-axis with label.
+  svg.append("g")
+  .attr("class", "y axis")
+  .call(d3.svg.axis().scale(y).orient("left"))
+  .append("text")
+  .attr("class", "label")
+  .attr("y", 6)
+  .attr("dy", ".71em")
+  .attr("text-anchor", "end")
+  .attr("transform", "rotate(-90)")
+  .text("Count");
+
 }
 
 
@@ -114,7 +138,7 @@ console.log(svg)
   .attr("x", width + 20)
   .attr("y", 10)
   .attr("dy", ".35em")
-  .text("log10(Count)");
+  .text("Count");
 
   // Add an x-axis with label.
   svg.append("g")
