@@ -17,6 +17,7 @@ $("#intersectForm").bind('submit', function(event) {
 
 $("#topn").bind('submit', function(event) {
     event.preventDefault();
+    $('#topnResults').hide()
     var data = $('#topNForm').serialize()
     doAjax('query/topn', data, function(data) {
         console.log(data);
@@ -75,6 +76,7 @@ $("#p5").click(function(event) {
 });
 
 function predefined(url, data) {
+    $('#predefinedResults').hide()
     return doAjax(url, data, function(data) {
         console.log(data);
         if (data.error) {
