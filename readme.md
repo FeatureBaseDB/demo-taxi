@@ -13,7 +13,7 @@ see https://github.com/jaffee/pdk/tree/taxi-import
 
 `pip install -r requirements.txt`
 
-update `pilosa_host` and `db` in `run.py`
+update `demo.cfg` (see `example.cfg`)
 
 `python run.py & open http://127.0.0.1:5000`
 
