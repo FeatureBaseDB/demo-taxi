@@ -36,29 +36,83 @@ $("#topn").bind('submit', function(event) {
         });
         table.append(tbody);
         $("#topn-result-table").html(table);
-        renderHistogram(data['rows']);
+
+        clearTopNCanvas();
+        renderHistogram('#topn-canvas', data['rows']);
     });
 });
 
+function clearTopNCanvas() {
+    $("#topn-canvas").remove();
+    $("#chartjs-hidden-iframe").remove();
+    $("#topn-canvas-container").append("<canvas id='topn-canvas' width='400' height='400'>");
+}
+
+function clearPredefinedCanvas() {
+    $("#predefined-canvas").remove();
+    $("#chartjs-hidden-iframe").remove();
+    $("#predefined-canvas-container").append("<canvas id='predefined-canvas' width='200' height='200'>");
+}
+
 $("#p1").click(function(event) {
-    getAndRenderRows('predefined/1', "");
+    predefined('predefined/1', "");
 });
 
 $("#p2").click(function(event) {
-    getAndRenderRows('predefined/2', "");
+    predefined('predefined/2', "");
 });
 
 $("#p3").click(function(event) {
-    getAndRenderRows('predefined/3', "");
+    predefined('predefined/3', "");
 });
 
 $("#p4").click(function(event) {
-    getAndRenderRows('predefined/4', "");
+    predefined('predefined/4', "");
 });
 
 $("#p5").click(function(event) {
-    getAndRenderRows('predefined/5', "");
+    predefined('predefined/5', "");
 });
+
+function predefined(url, data) {
+    return doAjax(url, data, function(data) {
+        console.log(data);
+        if (data.error) {
+            $('#predefinedResults').hide()
+        } else {
+            $('#predefinedResults').show()
+        }
+        $("#predefined-result-description").text(data['description']);
+        $("#predefined-result-latency").text(data['seconds'].toString().substring(0,5) + ' sec');
+        $("#predefined-result-total").text(addCommas(data['numProfiles']) + ' total profiles');
+
+        var header = [];
+        var table = $('<table class="table"></table>');
+        var theadtr = $('<tr></tr>')
+        $.each(data['rows'][0], function(key) {
+            header.push(key);
+            theadtr.append($('<th>' + key + '</th>'));
+        });
+        var thead = $('<thead></thead>');
+        thead.append(theadtr);
+        table.append(thead);
+        var tbody = $('<tbody></tbody>');
+        $.each(data['rows'], function(index, row) {
+            var tr = $('<tr></tr>');
+            $.each(header, function(_, key) {
+                tr.append($('<td>' + row[key] + '</td>'));
+            });
+            tbody.append(tr);
+        });
+        table.append(tbody);
+        $("#predefined-result-table").html(table);
+
+        clearPredefinedCanvas();
+        if(data['rows'].length > 1) {
+            renderHistogram('#predefined-canvas', data['rows']);
+        }
+    });
+}
 
 function doAjax(url, data, callback) {
     $.ajax({
@@ -84,7 +138,7 @@ function getAndRenderRows(url, data) {
         renderResultsAscii(data['rows']);
 
         if(data['rows'].length > 1) {
-            renderHistogram(data['rows'])
+            renderHistogram(data['rows']);
         }
     }});
 }
@@ -114,22 +168,22 @@ function renderResultsDom(rows) {
 // TODO populate some less ugly table rows
 }
 
-function renderHistogram(rows) {
+function renderHistogram(canvas, rows) {
     if(Object.keys(rows[0]).length == 2) {
-        renderHistogram1D(rows)
+        renderHistogram1D(canvas, rows)
     } else {
-        renderHistogram2D(rows)
+        renderHistogram2D(canvas, rows)
     }
 }
 
-function renderHistogram2D(rows) {
+function renderHistogram2D(canvas, rows) {
     // https://www.patrick-wied.at/static/heatmapjs/
     // http://tmroyal.github.io/Chart.HeatMap/
 }
 
-function renderHistogram1D(rows) {
+function renderHistogram1D(canvas, rows) {
     // rows is an array of objects with two keys, "count" contains y data, the other one contains x data
-    var canvas = $("#canvas");
+    var canvas = $(canvas);
     canvas.removeClass('hidden');
 
     // figure out the key to use for x data

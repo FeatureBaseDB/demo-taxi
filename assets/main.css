@@ -60,3 +60,7 @@ a {
     border-top-color: rgb(53, 84, 103);
     border-bottom-color: rgb(53, 84, 103);
 }
+
+.result-value {
+    font-weight: normal;
+}

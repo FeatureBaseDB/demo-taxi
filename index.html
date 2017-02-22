@@ -170,19 +170,19 @@
 						<h3>Results</h3>
 						<div class="row">
 							<div class="col-sm-2">Query</div>
-							<div id="intersect-result-query" class="col-sm-10"></div>
+							<div id="intersect-result-query" class="col-sm-10 result-value"></div>
 						</div>
 						<div class="row">
 							<div class="col-sm-2">Latency</div>
-							<div id="intersect-result-latency" class="col-sm-10"></div>
+							<div id="intersect-result-latency" class="col-sm-10 result-value"></div>
 						</div>
 						<div class="row">
 							<div class="col-sm-2">Count</div>
-							<div id="intersect-result-count" class="col-sm-10"></div>
+							<div id="intersect-result-count" class="col-sm-10 result-value"></div>
 						</div>
 						<div class="row">
 							<div class="col-sm-2">Total</div>
-							<div id="intersect-result-total" class="col-sm-10"></div>
+							<div id="intersect-result-total" class="col-sm-10 result-value"></div>
 						</div>
 					</div> 
 				</div> 
@@ -215,16 +215,24 @@
 					<div id="topnResults" class="container" style="display:none">
 						<h3>Results</h3>
 						<div class="row">
-							<div class="col-sm-2">Query</div>
+							<div class="col-sm-2 result-value">Query</div>
 							<div id="topn-result-query" class="col-sm-10"></div>
 						</div>
 						<div class="row">
-							<div class="col-sm-2">Latency</div>
+							<div class="col-sm-2 result-value">Latency</div>
 							<div id="topn-result-latency" class="col-sm-10"></div>
 						</div>
 						<div class="row">
-							<div class="col-sm-2">Total</div>
+							<div class="col-sm-2 result-value">Total</div>
 							<div id="topn-result-total" class="col-sm-10"></div>
+						</div>
+						<div class="row">
+							<div class="col-sm-2"></div>
+							<div id="topn-result-graph" class="col-sm-10">
+								<div id="topn-canvas-container">
+									<canvas id="topn-canvas" width="200" height="200"></canvas>
+								</div>
+							</div>
 						</div>
 						<div class="row table-container">
 							<div class="col-sm-2"></div>
@@ -265,24 +273,36 @@
 						</form>
 					</div>
 
+					<hr/>
+					<div id="predefinedResults" class="container" style="display:none">
+						<h3>Results</h3>
+						<div class="row">
+							<div class="col-sm-2">Description</div>
+							<div id="predefined-result-description" class="col-sm-10 result-value"></div>
+						</div>
+						<div class="row">
+							<div class="col-sm-2">Latency</div>
+							<div id="predefined-result-latency" class="col-sm-10 result-value"></div>
+						</div>
+						<div class="row">
+							<div class="col-sm-2">Total</div>
+							<div id="predefined-result-total" class="col-sm-10 result-value"></div>
+						</div>
+						<div class="row table-container">
+							<div class="col-sm-2"></div>
+							<div id="predefined-result-table" class="col-sm-10"></div>
+						</div>
+						<div class="row">
+							<div class="col-sm-2"></div>
+							<div id="opn-result-graph" class="col-sm-10">
+								<div id="predefined-canvas-container">
+									<canvas id="predefined-canvas" width="200" height="200"></canvas>
+								</div>
+							</div>
+						</div>
+					</div> 
 				</div> 
 			</div> 
-		</div>
-
-
-		<div class="row">
-			<div class="col">
-				<label for="results">Results</label><br />
-				<label for="profiles" id="profiles"></label><br />
-				<label for="description" id="description"></label><br />
-				<label for="time" id="time"></label><br />
-				<textarea class="form-control" id="results" rows="15"></textarea>
-			</div>
-			<div class="col">
-				<div id="canvas-container">
-					<canvas id="canvas" width="400" height="400"></canvas>
-				</div>
-			</div>
 		</div>
 
 		<script src="https://code.jquery.com/jquery-3.1.1.min.js" crossorigin="anonymous"></script>
