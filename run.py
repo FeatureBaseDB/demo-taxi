@@ -20,6 +20,12 @@ else:
     pilosadb = Config.get(section, 'pilosadb')
     host = Config.get(section, 'host')
     port = Config.get(section, 'port')
+
+section = "Predefined"
+if section not in Config.sections():
+    pct_thresh = 95.0
+else:
+    pct_thresh = float(Config.get(section, 'pct_thresh'))
 ########################################
 
 app = Flask(__name__)
@@ -305,7 +311,6 @@ def predefined4():
     n = 0
     total = 0
     rows = []
-    pct_thresh = 95.0
     for year, pcount, dist, maxcount in cands:
         bmps = [
             "Bitmap(id=%d, frame='pickupYear.n')" % year,
