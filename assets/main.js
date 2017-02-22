@@ -10,8 +10,8 @@ $("#intersectForm").bind('submit', function(event) {
         }
         $("#intersect-result-query").html(data['query']);
         $("#intersect-result-latency").text(data['seconds'].toString().substring(0,5) + ' sec');
-        $("#intersect-result-count").text(addCommas(data['rows'][0].count) + ' profiles');
-        $("#intersect-result-total").text(addCommas(data['numProfiles']) + ' total profiles');
+        $("#intersect-result-count").text(addCommas(data['rows'][0].count) + ' rides');
+        $("#intersect-result-total").text(addCommas(data['numProfiles']) + ' total rides');
     });
 });
 
@@ -28,7 +28,7 @@ $("#topn").bind('submit', function(event) {
         }
         $("#topn-result-query").text(data['query']);
         $("#topn-result-latency").text(data['seconds'].toString().substring(0,5) + ' sec');
-        $("#topn-result-total").text(addCommas(data['numProfiles']) + ' total profiles');
+        $("#topn-result-total").text(addCommas(data['numProfiles']) + ' total rides');
 
         var table = $('<table class="table"><thead><tr><th>Bitmap ID</th><th>Count</th></tr></thead></table>');
         var tbody = $('<tbody></tbody>');
@@ -86,7 +86,7 @@ function predefined(url, data) {
         }
         $("#predefined-result-description").text(data['description']);
         $("#predefined-result-latency").text(data['seconds'].toString().substring(0,5) + ' sec');
-        $("#predefined-result-total").text(addCommas(data['numProfiles']) + ' total profiles');
+        $("#predefined-result-total").text(addCommas(data['numProfiles']) + ' total rides');
 
         var header = [];
         var table = $('<table class="table"></table>');
@@ -135,7 +135,7 @@ function getAndRenderRows(url, data) {
             console.log(data)
             $("#time").text(data['seconds'].toString().substring(0,5) + ' sec');
             $("#description").html(data['description']);
-            $("#profiles").text(data['numProfiles'] + ' total profiles');
+            $("#profiles").text(data['numProfiles'] + ' total rides');
         //renderResultsRaw(data['rows'])
         renderResultsAscii(data['rows']);
 
