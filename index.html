@@ -9,8 +9,10 @@
 	<link rel="shortcut icon" type="image/x-icon" href="assets/favicon.ico"/>
 </head>
 <body>
+
 	<div class="container">
 		<img src="/assets/pilosa-logo.png" class="logo"/>
+
 
 		<div class="container"> 
 			<ul class="nav nav-tabs" role="tablist"> 
@@ -230,8 +232,7 @@
 						<div class="row">
 							<div class="col-sm-2"></div>
 							<div id="topn-result-graph" class="col-sm-10">
-								<div id="topn-canvas-container">
-									<canvas id="topn-canvas" width="200" height="200"></canvas>
+								<div id="topn-plot-container">
 								</div>
 							</div>
 						</div>
@@ -240,8 +241,8 @@
 							<div id="topn-result-table" class="col-sm-10"></div>
 						</div>
 					</div> 
-
 				</div> 
+
 				<div class="tab-pane" id="predefined" role="tabpanel"> 
 
 					<div class="container row">
@@ -289,27 +290,33 @@
 							<div class="col-sm-2">Total</div>
 							<div id="predefined-result-total" class="col-sm-10 result-value"></div>
 						</div>
+						<div class="row">
+							<div class="col-sm-2"></div>
+							<div id="opn-result-graph" class="col-sm-10">
+								<div id="predefined-plot-container">
+								</div>
+							</div>
+						</div>
 						<div class="row table-container">
 							<div class="col-sm-2"></div>
 							<div id="predefined-result-table" class="col-sm-10"></div>
 						</div>
-						<div class="row">
-							<div class="col-sm-2"></div>
-							<div id="opn-result-graph" class="col-sm-10">
-								<div id="predefined-canvas-container">
-									<canvas id="predefined-canvas" width="200" height="200"></canvas>
-								</div>
-							</div>
-						</div>
+
 					</div> 
 				</div> 
+
 			</div> 
 		</div>
 
 		<script src="https://code.jquery.com/jquery-3.1.1.min.js" crossorigin="anonymous"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+		<script src="https://d3js.org/d3.v3.min.js"></script>
+		<script src="https://d3js.org/d3-array.v1.min.js"></script>
+		<script src="https://d3js.org/d3-color.v1.min.js"></script>
+		<script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
+		<script src="https://d3js.org/d3-scale.v1.min.js"></script>
+		<script src="/assets/plot.js"></script>
 		<script src="/assets/main.js"></script>
 		<script>
         //startup()

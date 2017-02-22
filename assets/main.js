@@ -38,22 +38,13 @@ $("#topn").bind('submit', function(event) {
         table.append(tbody);
         $("#topn-result-table").html(table);
 
-        clearTopNCanvas();
-        renderHistogram('#topn-canvas', data['rows']);
+        clearPlot("#topn-plot-container");
+        if(data['rows'].length > 1 && 'count' in data['rows'][0]) {
+            renderHistogram(data['rows'], "#topn-plot-container");
+        }
+
     });
 });
-
-function clearTopNCanvas() {
-    $("#topn-canvas").remove();
-    $("#chartjs-hidden-iframe").remove();
-    $("#topn-canvas-container").append("<canvas id='topn-canvas' width='200' height='200'>");
-}
-
-function clearPredefinedCanvas() {
-    $("#predefined-canvas").remove();
-    $("#chartjs-hidden-iframe").remove();
-    $("#predefined-canvas-container").append("<canvas id='predefined-canvas' width='200' height='200'>");
-}
 
 $("#p1").click(function(event) {
     predefined('predefined/1', "");
@@ -109,9 +100,9 @@ function predefined(url, data) {
         table.append(tbody);
         $("#predefined-result-table").html(table);
 
-        clearPredefinedCanvas();
-        if(data['rows'].length > 1) {
-            renderHistogram('#predefined-canvas', data['rows']);
+        clearPlot("#predefined-plot-container");        
+        if(data['rows'].length > 1 && 'count' in data['rows'][0]) {
+            renderHistogram(data['rows'], "#predefined-plot-container");
         }
     });
 }
@@ -124,31 +115,6 @@ function doAjax(url, data, callback) {
         data: data,
         success: callback,
     });
-}
-function getAndRenderRows(url, data) {
-    $.ajax({
-        url: url,
-        type: 'get',
-        dataType: 'json',
-        data: data,
-        success: function(data) {
-            console.log(data)
-            $("#time").text(data['seconds'].toString().substring(0,5) + ' sec');
-            $("#description").html(data['description']);
-            $("#profiles").text(data['numProfiles'] + ' total rides');
-        //renderResultsRaw(data['rows'])
-        renderResultsAscii(data['rows']);
-
-        clearCanvas();
-
-        if(data['rows'].length > 1) {
-            renderHistogram(data['rows']);
-        }
-    }});
-}
-
-function renderResultsRaw(rows) {
-    $("#results").text(JSON.stringify(rows));
 }
 
 function renderResultsAscii(rows) {
@@ -168,67 +134,27 @@ function renderResultsAscii(rows) {
     $("#results").text(str)
 }
 
-function renderResultsDom(rows) {
-// TODO populate some less ugly table rows
+function clearPlot(selector) {
+    $(selector+" svg").remove()
 }
 
-function renderHistogram(canvas, rows) {
+function renderHistogram(rows, selector) {
+    console.log('renderHistogram enter')
     if(Object.keys(rows[0]).length == 2) {
-        renderHistogram1D(canvas, rows)
-    } else {
-        renderHistogram2D(canvas, rows)
-    }
-}
-
-function renderHistogram2D(canvas, rows) {
-    // https://www.patrick-wied.at/static/heatmapjs/
-    // http://tmroyal.github.io/Chart.HeatMap/
-}
-
-function renderHistogram1D(canvas, rows) {
-    // rows is an array of objects with two keys, "count" contains y data, the other one contains x data
-    var canvas = $(canvas);
-    canvas.removeClass('hidden');
-
-    // figure out the key to use for x data
-    keys = Object.keys(rows[0])
-    for(var key in rows[0]) {
-        if(key != "count") {
-            xkey = key
-        }
-    }
-
-    // sort rows by x value and create arrays
-    rows.sort(function(a, b) {
-        return a[xkey] - b[xkey];
-    });
-    x=[];
-    y=[];
-    for(var n=0; n<rows.length; n++) {
-        x.push(rows[n][xkey])
-        y.push(rows[n]['count'])
-    }
-
-    var myChart = new Chart(canvas, {
-        type: 'bar',
-        data: {
-            labels: x,
-            datasets: [{
-                label: xkey,
-                data: y,
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                yAxes: [{
-                    ticks: {
-                        beginAtZero:true
-                    }
-                }]
+        keys = Object.keys(rows[0])
+        for(var key in rows[0]) {
+            if(key != "count") {
+                xkey = key
             }
         }
-    });
+
+        console.log(xkey)
+        // expects rows like [{xkey: 10, 'count': 100}, ...]
+        hist1D(rows, xkey, selector)
+    } else if('x' in rows[0] && 'y' in rows[0]) {
+        // expects rows like [{'x': 30, 'y': 70, 'count': 100}, ...] 
+        hist2D(rows, selector)
+    }
 }
 
 function addCommas(intNum) {

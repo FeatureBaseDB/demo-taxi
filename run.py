@@ -51,6 +51,10 @@ def icon():
 def js():
     return Response(open('assets/main.js', 'r').read(), mimetype='application/javascript')
 
+@app.route('/assets/plot.js')
+def plot():
+    return Response(open('assets/plot.js', 'r').read(), mimetype='application/javascript')
+
 @app.route('/assets/main.css')
 def css():
     return Response(open('assets/main.css', 'r').read(), mimetype='text/css')
