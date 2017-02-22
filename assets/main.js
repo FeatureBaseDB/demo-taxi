@@ -8,7 +8,7 @@ $("#intersectForm").bind('submit', function(event) {
         } else {
             $('#intersectResults').show()
         }
-        $("#intersect-result-query").text(data['query']);
+        $("#intersect-result-query").html(data['query']);
         $("#intersect-result-latency").text(data['seconds'].toString().substring(0,5) + ' sec');
         $("#intersect-result-count").text(addCommas(data['rows'][0].count) + ' profiles');
         $("#intersect-result-total").text(addCommas(data['numProfiles']) + ' total profiles');
