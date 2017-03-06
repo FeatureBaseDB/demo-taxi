@@ -9,7 +9,7 @@ see https://github.com/jaffee/pdk/tree/taxi-import
 
 `virtualenv ~/venvs/demo-taxi  # or whatever`
 
-`source ~/vencs/demo-taxi/bin/activate`
+`source ~/venvs/demo-taxi/bin/activate`
 
 `pip install -r requirements.txt`
 
