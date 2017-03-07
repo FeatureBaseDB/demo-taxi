@@ -137,7 +137,7 @@ max_key_map = {
     'speed_mph.n': 100,
     'duration_minutes.n': 100,
     'dist_miles.n': 40,
-    'totalAmount_dollars.n': 100,
+    'total_amount_dollars.n': 100,
 }
 
 @app.route("/query/topn")
@@ -155,7 +155,7 @@ def topn():
     max_key = max_key_map.get(frame, 1000000)
     rows = [{'bitmapID': c['key'], 'count': c['count']} for c in res if c['key'] < max_key]
 
-    if 'Grid' in frame:
+    if 'grid' in frame:
         add_grid_coords(rows)
 
     result = {
