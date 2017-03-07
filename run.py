@@ -39,7 +39,7 @@ pqurl = '%s/query?db=%s&profiles=true' % (pilosa_hosts[0], db)
 
 # TODO complete this map
 namemap = {
-    'cabType.n': {
+    'cab_type.n': {
         'Green': 0,
         'Yellow': 1,
     },
@@ -79,7 +79,7 @@ def get_profile_count():
     qs = ''
     bitmapIDs = range(10)
     for i in bitmapIDs:
-        qs += 'Count(Bitmap(id=%s, frame=cabType.n))' % i
+        qs += 'Count(Bitmap(id=%s, frame=cab_type.n))' % i
 
     resp = requests.post(qurl, data=qs)
     data = json.loads(resp.content)
@@ -183,7 +183,7 @@ def predefined1():
     qs = ''
     ctypes = range(10)
     for i in ctypes:
-        qs += 'Count(Bitmap(id=%s, frame=cabType.n))' % i
+        qs += 'Count(Bitmap(id=%s, frame=cab_type.n))' % i
 
     resp = requests.post(qurl, data=qs)
     t1 = time.time()
@@ -191,7 +191,7 @@ def predefined1():
     # compile results
     data = json.loads(resp.content)
     counts = data['results']
-    rows = [{'cabType': ctype, 'count': count} for ctype, count in zip(ctypes, counts) if count >0]
+    rows = [{'cab_type': ctype, 'count': count} for ctype, count in zip(ctypes, counts) if count >0]
     result = {
         'rows': rows,
         'seconds': t1-t0,
@@ -211,7 +211,7 @@ def predefined2():
     qs = ''
     pcounts = range(10)
     for i in pcounts:
-        qs += "TopN(Bitmap(id=%d, frame='passengerCount.n'), frame=totalAmount_dollars.n)" % i
+        qs += "TopN(Bitmap(id=%d, frame='passenger_count.n'), frame=total_amount_dollars.n)" % i
     resp = requests.post(qurl, data=qs)
     t1 = time.time()
 
@@ -230,7 +230,7 @@ def predefined2():
     result = {
         'rows': rows,
         'seconds': t1-t0,
-        'description': 'average(totalAmount) by passengerCount (Mark #2)',
+        'description': 'average(total_amount) by passenger_count (Mark #2)',
         'numProfiles': get_profile_count(),
     }
     print('predefined 2: %.2f sec' % (t1-t0))
@@ -249,8 +249,8 @@ def predefined3():
     pairs = list(product(years, pcounts))
     for year, pcount in pairs:
         bmps = [
-            "Bitmap(id=%d, frame='pickupYear.n')" % year,
-            "Bitmap(id=%d, frame='passengerCount.n')" % pcount,
+            "Bitmap(id=%d, frame='pickup_year.n')" % year,
+            "Bitmap(id=%d, frame='passenger_count.n')" % pcount,
         ]
         qs += "Count(Intersect(%s))" % ', '.join(bmps)
 
@@ -272,7 +272,7 @@ def predefined3():
     result = {
         'rows': rows,
         'seconds': t1-t0,
-        'description': 'Profile count by (year, passengerCount) (Mark #3)',
+        'description': 'Profile count by (year, passenger_count) (Mark #3)',
         'numProfiles': get_profile_count(),
     }
     print('predefined 3: %.2f sec' % (t1-t0))
@@ -292,8 +292,8 @@ def predefined4():
     dists = range(50)
 
     topns = [
-        "TopN(frame='pickupYear.n')"
-        "TopN(frame='passengerCount.n')"
+        "TopN(frame='pickup_year.n')"
+        "TopN(frame='passenger_count.n')"
         "TopN(frame='dist_miles.n')"
     ]
     qs = ', '.join(topns)
@@ -319,8 +319,8 @@ def predefined4():
     rows = []
     for year, pcount, dist, maxcount in cands:
         bmps = [
-            "Bitmap(id=%d, frame='pickupYear.n')" % year,
-            "Bitmap(id=%d, frame='passengerCount.n')" % pcount,
+            "Bitmap(id=%d, frame='pickup_year.n')" % year,
+            "Bitmap(id=%d, frame='passenger_count.n')" % pcount,
             "Bitmap(id=%d, frame='dist_miles.n')" % dist,
         ]
         q = "Count(Intersect(%s))" % ', '.join(bmps)
@@ -331,8 +331,8 @@ def predefined4():
         rows.append({
             'count': count,
             'distance': dist,
-            'passengerCount': pcount,
-            'pickupYear': year,
+            'passenger_count': pcount,
+            'pickup_year': year,
         })
 
         pct = (100.*total)/num_profiles
@@ -342,14 +342,14 @@ def predefined4():
 
         n += 1
 
-    rows.sort(key=lambda x: (-x['pickupYear'], -x['count']))
+    rows.sort(key=lambda x: (-x['pickup_year'], -x['count']))
 
     t2 = time.time()
     result = {
         'percentageThreshold': pct_thresh,
         'rows': rows,
         'seconds': t2-t0,
-        'description': 'Profile count by (year, passengerCount, tripDistance), ordered by (year, count) (Mark #4)',
+        'description': 'Profile count by (year, passenger_count, trip_distance), ordered by (year, count) (Mark #4)',
         'numProfiles': get_profile_count(),
     }
 
@@ -361,15 +361,15 @@ def predefined4():
 def predefined5():
     # count of pickup locations for the top dropoff location
     t0 = time.time()
-    q = "TopN(frame=dropGridID.n, n=1)"
+    q = "TopN(frame=drop_grid_id.n, n=1)"
     res = requests.post(qurl, data=q).json()['results'][0]
     top_dropoff_id = res[0]['key']
-    q = "TopN(Bitmap(frame=dropGridID.n, id=%d), frame=pickupGridID.n)" % top_dropoff_id
+    q = "TopN(Bitmap(frame=drop_grid_id.n, id=%d), frame=pickup_grid_id.n)" % top_dropoff_id
     resp = requests.post(qurl, data=q)
     t1 = time.time()
     res = resp.json()['results'][0]
 
-    key = 'pickupGridID'
+    key = 'pickup_grid_id'
     rows = [{key: r['key'], 'count': r['count']} for r in res]
 
     add_grid_coords(rows, key=key)
