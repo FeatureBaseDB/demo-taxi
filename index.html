@@ -35,7 +35,7 @@
 							<div class="form-group row">
 								<label for="cabType" class="col-sm-2 col-form-label">Cab type</label>
 								<div class="col-sm-10">
-									<select name="cab_type.n" form="intersectForm" class="form-control" id="cabType" onchange="$(this.form).trigger('submit')">
+									<select name="cab_type" form="intersectForm" class="form-control" id="cabType" onchange="$(this.form).trigger('submit')">
 										<option></option>
 										<option>Green</option>
 										<option>Yellow</option>
@@ -46,7 +46,7 @@
 							<div class="form-group row">
 								<label for="year" class="col-sm-2 col-form-label">Year</label>
 								<div class="col-sm-10">
-									<select name="pickup_year.n" form="intersectForm" class="form-control" id="pickupYear" onchange="$(this.form).trigger('submit')">
+									<select name="pickup_year" form="intersectForm" class="form-control" id="pickupYear" onchange="$(this.form).trigger('submit')">
 										<option></option>
 										<option>2009</option>
 										<option>2010</option>
@@ -62,7 +62,7 @@
 							<div class="form-group row">
 								<label for="distance" class="col-sm-2 col-form-label">Distance</label>
 								<div class="col-sm-10">
-									<select name="dist_miles.n" form="intersectForm" class="form-control" id="distance" onchange="$(this.form).trigger('submit')">
+									<select name="dist_miles" form="intersectForm" class="form-control" id="distance" onchange="$(this.form).trigger('submit')">
 										<option></option>
 										<option value=0><.5 mi</option>
 										<option value=1>1 mi</option>
@@ -85,7 +85,7 @@
 							<div class="form-group row">
 								<label for="duration" class="col-sm-2 col-form-label">Duration</label>
 								<div class="col-sm-10">
-									<select name="duration_minutes.n" form="intersectForm" class="form-control" id="duration_minutes" onchange="$(this.form).trigger('submit')">
+									<select name="duration_minutes" form="intersectForm" class="form-control" id="duration_minutes" onchange="$(this.form).trigger('submit')">
 										<option></option>
 										<option value=0>0 min</option>
 										<option value=1>1 min</option>
@@ -108,7 +108,7 @@
 							<div class="form-group row">
 								<label for="speed" class="col-sm-2 col-form-label">Speed</label>
 								<div class="col-sm-10">
-									<select name="speed_mph.n" form="intersectForm" class="form-control" id="speed_mph" onchange="$(this.form).trigger('submit')">
+									<select name="speed_mph" form="intersectForm" class="form-control" id="speed_mph" onchange="$(this.form).trigger('submit')">
 										<option></option>
 										<option value=0><.5 mph</option>
 										<option value=1>1 mph</option>
@@ -131,7 +131,7 @@
 							<div class="form-group row">
 								<label for="passengerCount" class="col-sm-2 col-form-label">Passenger count</label>
 								<div class="col-sm-10">
-									<select name="passenger_count.n" form="intersectForm" class="form-control" id="passengerCount" onchange="$(this.form).trigger('submit')">
+									<select name="passenger_count" form="intersectForm" class="form-control" id="passengerCount" onchange="$(this.form).trigger('submit')">
 										<option></option>
 										<option>0</option>
 										<option>1</option>
@@ -149,7 +149,7 @@
 							<div class="form-group row">
 								<label for="totalAmount" class="col-sm-2 col-form-label">Total fare</label>
 								<div class="col-sm-10">
-									<select name="total_amount_dollars.n" form="intersectForm" class="form-control" id="totalAmount_dollars" onchange="$(this.form).trigger('submit')">
+									<select name="total_amount_dollars" form="intersectForm" class="form-control" id="totalAmount_dollars" onchange="$(this.form).trigger('submit')">
 										<option></option>
 										<option value=0>$0</option>
 										<option value=1>$1</option>
@@ -198,16 +198,16 @@
 								<div class="col-sm-10">
 									<select name="frame" form="topNForm" class="form-control" id="frame" onchange="$(this.form).trigger('submit')">
 										<option></option>
-										<option value="cab_type.n">Cab Type</option>
-										<option value="pickup_year.n">Pickup Year</option>
-										<option value="pickup_month.n">Pickup Month</option>
-										<option value="pickup_day.n">Pickup Day</option>
-										<option value="dist_miles.n">Distance (miles)</option>
-										<option value="duration_minutes.n">Duration (minutes)</option>
-										<option value="speed_mph.n">Speed (mph)</option>
-										<option value="passenger_count.n">Passenger Count</option>
-										<option value="total_amount_dollars.n">Total Fare (dollars)</option>
-										<option value="pickup_grid_id.n">Pickup Grid</option>
+										<option value="cab_type">Cab Type</option>
+										<option value="pickup_year">Pickup Year</option>
+										<option value="pickup_month">Pickup Month</option>
+										<option value="pickup_day">Pickup Day</option>
+										<option value="dist_miles">Distance (miles)</option>
+										<option value="duration_minutes">Duration (minutes)</option>
+										<option value="speed_mph">Speed (mph)</option>
+										<option value="passenger_count">Passenger Count</option>
+										<option value="total_amount_dollars">Total Fare (dollars)</option>
+										<option value="pickup_grid_id">Pickup Grid</option>
 									</select>
 								</div>
 							</div>

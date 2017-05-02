@@ -11,7 +11,7 @@ Config = ConfigParser.ConfigParser()
 Config.read("demo.cfg")
 section = "Base"
 if section not in Config.sections():
-    pilosahost = "http://localhost:15000"
+    pilosahost = "http://localhost:10101"
     pilosadb = "db"
     host = "127.0.0.1"
     port = 5000
@@ -34,12 +34,12 @@ pilosa_hosts = [pilosahost]
 db = pilosadb
 
 settings = {'hosts': pilosa_hosts}
-qurl = '%s/query?db=%s' % (pilosa_hosts[0], db)
+qurl = '%s/index/%s/query' % (pilosa_hosts[0], db)
 pqurl = '%s/query?db=%s&profiles=true' % (pilosa_hosts[0], db)
 
 # TODO complete this map
 namemap = {
-    'cab_type.n': {
+    'cab_type': {
         'Green': 0,
         'Yellow': 1,
     },
@@ -79,7 +79,7 @@ def get_profile_count():
     qs = ''
     bitmapIDs = range(10)
     for i in bitmapIDs:
-        qs += 'Count(Bitmap(id=%s, frame=cab_type.n))' % i
+        qs += 'Count(Bitmap(rowID=%s, frame=cab_type))' % i
 
     resp = requests.post(qurl, data=qs)
     data = json.loads(resp.content)
@@ -103,7 +103,7 @@ def intersect():
         except:
             bitmapid = namemap[frame][bitmap]
 
-        bmps.append("Bitmap(id=%d, frame='%s')" % (bitmapid, frame))
+        bmps.append("Bitmap(rowID=%d, frame='%s')" % (bitmapid, frame))
 
     q = "Count(Intersect(%s))" % ', '.join(bmps)
     print(q)
@@ -133,11 +133,11 @@ def format_intersect_query(bmps):
 
 # there is a mapping bug that makes a few topn results look weird
 # filter out large keys here, pending real fix
-max_key_map = {
-    'speed_mph.n': 100,
-    'duration_minutes.n': 100,
-    'dist_miles.n': 40,
-    'total_amount_dollars.n': 100,
+max_id_map = {
+    'speed_mph': 100,
+    'duration_minutes': 100,
+    'dist_miles': 40,
+    'total_amount_dollars': 100,
 }
 
 @app.route("/query/topn")
@@ -148,12 +148,14 @@ def topn():
 
     t0 = time.time()
     q = "TopN(frame='%s')" % frame
+    print(qurl)
+    print(q)
     resp = requests.post(qurl, data=q)
     t1 = time.time()
     res = resp.json()['results'][0]
 
-    max_key = max_key_map.get(frame, 1000000)
-    rows = [{'bitmapID': c['key'], 'count': c['count']} for c in res if c['key'] < max_key]
+    max_id = max_id_map.get(frame, 1000000)
+    rows = [{'bitmapID': c['id'], 'count': c['count']} for c in res if c['id'] < max_id]
 
     if 'grid' in frame:
         add_grid_coords(rows)
@@ -183,7 +185,7 @@ def predefined1():
     qs = ''
     ctypes = range(10)
     for i in ctypes:
-        qs += 'Count(Bitmap(id=%s, frame=cab_type.n))' % i
+        qs += 'Count(Bitmap(rowID=%s, frame=cab_type))' % i
 
     resp = requests.post(qurl, data=qs)
     t1 = time.time()
@@ -211,7 +213,7 @@ def predefined2():
     qs = ''
     pcounts = range(10)
     for i in pcounts:
-        qs += "TopN(Bitmap(id=%d, frame='passenger_count.n'), frame=total_amount_dollars.n)" % i
+        qs += "TopN(Bitmap(rowID=%d, frame='passenger_count'), frame=total_amount_dollars)" % i
     resp = requests.post(qurl, data=qs)
     t1 = time.time()
 
@@ -220,7 +222,7 @@ def predefined2():
         print('computing average for pcount=%d, %d vals' % (pcount, len(topn)))
         if not topn:
             continue
-        wsum = sum([r['count'] * r['key'] for r in topn])
+        wsum = sum([r['count'] * r['id'] for r in topn])
         count = sum([r['count'] for r in topn])
         rows.append({
             'passengerCount': pcount,
@@ -249,8 +251,8 @@ def predefined3():
     pairs = list(product(years, pcounts))
     for year, pcount in pairs:
         bmps = [
-            "Bitmap(id=%d, frame='pickup_year.n')" % year,
-            "Bitmap(id=%d, frame='passenger_count.n')" % pcount,
+            "Bitmap(rowID=%d, frame='pickup_year')" % year,
+            "Bitmap(rowID=%d, frame='passenger_count')" % pcount,
         ]
         qs += "Count(Intersect(%s))" % ', '.join(bmps)
 
@@ -292,9 +294,9 @@ def predefined4():
     dists = range(50)
 
     topns = [
-        "TopN(frame='pickup_year.n')"
-        "TopN(frame='passenger_count.n')"
-        "TopN(frame='dist_miles.n')"
+        "TopN(frame='pickup_year')"
+        "TopN(frame='passenger_count')"
+        "TopN(frame='dist_miles')"
     ]
     qs = ', '.join(topns)
     resp = requests.post(qurl, data=qs)
@@ -303,9 +305,9 @@ def predefined4():
     t1 = time.time()
 
     # assemble TopN results into candidates
-    year_keycounts = [(x['key'], x['count']) for x in res[0]]
-    pcount_keycounts = [(x['key'], x['count']) for x in res[1]]
-    dist_keycounts = [(x['key'], x['count']) for x in res[2]]
+    year_keycounts = [(x['id'], x['count']) for x in res[0]]
+    pcount_keycounts = [(x['id'], x['count']) for x in res[1]]
+    dist_keycounts = [(x['id'], x['count']) for x in res[2]]
 
     cands = []
     for (year_key, year_count), (pcount_key, pcount_count), (dist_key, dist_count) in product(year_keycounts, pcount_keycounts, dist_keycounts):
@@ -319,9 +321,9 @@ def predefined4():
     rows = []
     for year, pcount, dist, maxcount in cands:
         bmps = [
-            "Bitmap(id=%d, frame='pickup_year.n')" % year,
-            "Bitmap(id=%d, frame='passenger_count.n')" % pcount,
-            "Bitmap(id=%d, frame='dist_miles.n')" % dist,
+            "Bitmap(rowID=%d, frame='pickup_year')" % year,
+            "Bitmap(rowID=%d, frame='passenger_count')" % pcount,
+            "Bitmap(rowID=%d, frame='dist_miles')" % dist,
         ]
         q = "Count(Intersect(%s))" % ', '.join(bmps)
         resp = requests.post(qurl, data=q)
@@ -361,16 +363,16 @@ def predefined4():
 def predefined5():
     # count of pickup locations for the top dropoff location
     t0 = time.time()
-    q = "TopN(frame=drop_grid_id.n, n=1)"
+    q = "TopN(frame=drop_grid_id, n=1)"
     res = requests.post(qurl, data=q).json()['results'][0]
-    top_dropoff_id = res[0]['key']
-    q = "TopN(Bitmap(frame=drop_grid_id.n, id=%d), frame=pickup_grid_id.n)" % top_dropoff_id
+    top_dropoff_id = res[0]['id']
+    q = "TopN(Bitmap(frame=drop_grid_id, rowID=%d), frame=pickup_grid_id)" % top_dropoff_id
     resp = requests.post(qurl, data=q)
     t1 = time.time()
     res = resp.json()['results'][0]
 
     key = 'pickup_grid_id'
-    rows = [{key: r['key'], 'count': r['count']} for r in res]
+    rows = [{key: r['id'], 'count': r['count']} for r in res]
 
     add_grid_coords(rows, key=key)
 
