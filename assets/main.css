@@ -1,7 +1,7 @@
 body {
   /*padding-top: 5rem; */
-  background-color: rgb(237, 236, 232);
-  font-family: Gill Sans;
+  background-color: #fbfcfd;
+  font-family: sans-serif;
   font-weight: lighter;
   font-size: 1.2em;
 }
@@ -52,13 +52,17 @@ body {
 }
 
 .btn-primary {
-    background-color: rgb(53, 84, 103);
-    border-color: black;
+    background-color: #1db598;
+    border: none;
     margin-bottom: 0.5em;
 }
 
+.btn-primary:hover {
+    background-color: #1db598;
+}
+
 a {
-    color: rgb(53, 84, 103);
+    color: #102445;
 }
 
 .table-container {
@@ -89,5 +93,6 @@ a {
 .result-query {
     font-family: inconsolata, monospace;
     font-weight: bold;
-    background-color: rgb(214, 213, 209);
+    background-color: #fafafa;
+    border-color: #e4eff4;
 }
