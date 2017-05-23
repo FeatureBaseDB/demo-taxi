@@ -34,7 +34,9 @@ type Server struct {
 }
 
 func NewServer() (*Server, error) {
-	server := &Server{}
+	server := &Server{
+		Frames: make(map[string]*pilosa.Frame),
+	}
 
 	router := mux.NewRouter()
 	//router.HandleFunc("/", server.HandleFrontend).Methods("GET")
@@ -57,65 +59,30 @@ func NewServer() (*Server, error) {
 		return nil, fmt.Errorf("client.EnsureIndex: %v", err)
 	}
 
-	yearFrame, err := index.Frame("pickup_year", nil)
-	if err != nil {
-		return nil, fmt.Errorf("index.Frame: %v", err)
-	}
-	err = client.EnsureFrame(yearFrame)
-	if err != nil {
-		return nil, fmt.Errorf("client.EnsureFrame: %v", err)
-	}
+	frames := []string{"cab_type", "passenger_count", "total_amount_dollars", "pickup_time", "pickup_day", "pickup_month", "pickup_year", "drop_time", "drop_day", "drop_month", "drop_year", "dist_miles", "duration_minutes", "speed_mph", "pickup_grid_id", "drop_grid_id"}
 
-	pcountFrame, err := index.Frame("passenger_count", nil)
-	if err != nil {
-		return nil, fmt.Errorf("index.Frame: %v", err)
-	}
-	err = client.EnsureFrame(pcountFrame)
-	if err != nil {
-		return nil, fmt.Errorf("client.EnsureFrame: %v", err)
-	}
+	for _, frameName := range frames {
+		frame, err := index.Frame(frameName, nil)
+		if err != nil {
+			return nil, fmt.Errorf("index.Frame %v: %v", frameName, err)
+		}
+		err = client.EnsureFrame(frame)
+		if err != nil {
+			return nil, fmt.Errorf("client.EnsureFrame %v: %v", frameName, err)
+		}
 
-	distFrame, err := index.Frame("dist_miles", nil)
-	if err != nil {
-		return nil, fmt.Errorf("index.Frame: %v", err)
-	}
-	err = client.EnsureFrame(distFrame)
-	if err != nil {
-		return nil, fmt.Errorf("client.EnsureFrame: %v", err)
-	}
-
-	typeFrame, err := index.Frame("cab_type", nil)
-	if err != nil {
-		return nil, fmt.Errorf("index.Frame: %v", err)
-	}
-	err = client.EnsureFrame(typeFrame)
-	if err != nil {
-		return nil, fmt.Errorf("client.EnsureFrame: %v", err)
-	}
-
-	total_frame, err := index.Frame("total_amount_dollars", nil)
-	if err != nil {
-		return nil, fmt.Errorf("index.Frame: %v", err)
-	}
-
-	frames := map[string]*pilosa.Frame{
-		"year":                 yearFrame,
-		"pcount":               pcountFrame,
-		"dist":                 distFrame,
-		"cabtype":              typeFrame,
-		"total_amount_dollars": total_frame,
+		server.Frames[frameName] = frame
 	}
 
 	server.Router = router
 	server.Client = client
 	server.Index = index
-	server.Frames = frames
 	return server, nil
 }
 
 func (s *Server) testQuery() error {
 	// Send a Bitmap query. PilosaException is thrown if execution of the query fails.
-	response, err := s.Client.Query(s.Frames["year"].Bitmap(2013), nil)
+	response, err := s.Client.Query(s.Frames["pickup_year"].Bitmap(2013), nil)
 	if err != nil {
 		return fmt.Errorf("s.Client.Query: %v", err)
 	}
@@ -171,7 +138,7 @@ func (s *Server) avgCostForPassengerCount(count int, values []float64, wg *sync.
 	if !ok {
 		log.Println("total_amount_dollars frame doesn't exist")
 	}
-	pcFrame, ok := s.Frames["pcount"]
+	pcFrame, ok := s.Frames["passenger_count"]
 	if !ok {
 		log.Println("passenger_count frame doesn't exist")
 	}
@@ -222,8 +189,8 @@ func (s *Server) HandlePredefined3Serial(w http.ResponseWriter, r *http.Request)
 	for year := 2009; year <= 2016; year++ {
 		for pcount := 1; pcount <= 7; pcount++ {
 			response, err := s.Client.Query(s.Index.Intersect(
-				s.Frames["year"].Bitmap(uint64(year)),
-				s.Frames["pcount"].Bitmap(uint64(pcount)),
+				s.Frames["pickup_year"].Bitmap(uint64(year)),
+				s.Frames["passenger_count"].Bitmap(uint64(pcount)),
 			), nil)
 			if err != nil {
 				log.Printf("s.Client.Query: %v", err)
@@ -305,7 +272,7 @@ type Predefined4Row struct {
 func (s *Server) getRideCount() uint64 {
 	var count uint64 = 0
 	for n := 0; n < 3; n++ {
-		q := s.Index.Count(s.Frames["cabtype"].Bitmap(uint64(n)))
+		q := s.Index.Count(s.Frames["cab_type"].Bitmap(uint64(n)))
 		response, _ := s.Client.Query(q, nil)
 		count += response.Result().Count
 	}
