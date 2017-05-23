@@ -16,7 +16,10 @@ const indexName = "taxi"
 const percentThreshold = 90
 
 func main() {
-	server := NewServer()
+	server, err := NewServer()
+	if err != nil {
+		log.Fatalf("getting new server: %v", err)
+	}
 	//server.testQuery()
 	fmt.Printf("ride count: %d\n", server.getRideCount())
 	server.Serve()
@@ -29,7 +32,7 @@ type Server struct {
 	Frames map[string]*pilosa.Frame
 }
 
-func NewServer() *Server {
+func NewServer() (*Server, error) {
 	server := &Server{}
 
 	router := mux.NewRouter()
@@ -44,20 +47,50 @@ func NewServer() *Server {
 	//router.HandleFunc("/predefined/5", server.HandlePredefined5).Methods("GET")
 
 	client := pilosa.DefaultClient()
-	index, _ := pilosa.NewIndex(indexName, nil)
-	_ = client.EnsureIndex(index)
+	index, err := pilosa.NewIndex(indexName, nil)
+	if err != nil {
+		return nil, fmt.Errorf("pilosa.NewIndex: %v", err)
+	}
+	err = client.EnsureIndex(index)
+	if err != nil {
+		return nil, fmt.Errorf("client.EnsureIndex: %v", err)
+	}
 
-	yearFrame, _ := index.Frame("pickup_year", nil)
-	_ = client.EnsureFrame(yearFrame)
+	yearFrame, err := index.Frame("pickup_year", nil)
+	if err != nil {
+		return nil, fmt.Errorf("index.Frame: %v", err)
+	}
+	err = client.EnsureFrame(yearFrame)
+	if err != nil {
+		return nil, fmt.Errorf("client.EnsureFrame: %v", err)
+	}
 
-	pcountFrame, _ := index.Frame("passenger_count", nil)
-	_ = client.EnsureFrame(pcountFrame)
+	pcountFrame, err := index.Frame("passenger_count", nil)
+	if err != nil {
+		return nil, fmt.Errorf("index.Frame: %v", err)
+	}
+	err = client.EnsureFrame(pcountFrame)
+	if err != nil {
+		return nil, fmt.Errorf("client.EnsureFrame: %v", err)
+	}
 
-	distFrame, _ := index.Frame("dist_miles", nil)
-	_ = client.EnsureFrame(distFrame)
+	distFrame, err := index.Frame("dist_miles", nil)
+	if err != nil {
+		return nil, fmt.Errorf("index.Frame: %v", err)
+	}
+	err = client.EnsureFrame(distFrame)
+	if err != nil {
+		return nil, fmt.Errorf("client.EnsureFrame: %v", err)
+	}
 
-	typeFrame, _ := index.Frame("cab_type", nil)
-	_ = client.EnsureFrame(typeFrame)
+	typeFrame, err := index.Frame("cab_type", nil)
+	if err != nil {
+		return nil, fmt.Errorf("index.Frame: %v", err)
+	}
+	err = client.EnsureFrame(typeFrame)
+	if err != nil {
+		return nil, fmt.Errorf("client.EnsureFrame: %v", err)
+	}
 
 	frames := map[string]*pilosa.Frame{
 		"year":    yearFrame,
@@ -70,12 +103,15 @@ func NewServer() *Server {
 	server.Client = client
 	server.Index = index
 	server.Frames = frames
-	return server
+	return server, nil
 }
 
-func (s *Server) testQuery() {
+func (s *Server) testQuery() error {
 	// Send a Bitmap query. PilosaException is thrown if execution of the query fails.
-	response, _ := s.Client.Query(s.Frames["year"].Bitmap(2013), nil)
+	response, err := s.Client.Query(s.Frames["year"].Bitmap(2013), nil)
+	if err != nil {
+		return fmt.Errorf("s.Client.Query: %v", err)
+	}
 
 	// Get the result
 	result := response.Result()
@@ -107,7 +143,7 @@ func (s *Server) HandlePredefined3(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		fmt.Printf("result encoding error: %s\n", err)
+		log.Printf("result encoding error: %s\n", err)
 	}
 
 }
@@ -121,10 +157,13 @@ func (s *Server) HandlePredefined3Serial(w http.ResponseWriter, r *http.Request)
 
 	for year := 2009; year <= 2016; year++ {
 		for pcount := 1; pcount <= 7; pcount++ {
-			response, _ := s.Client.Query(s.Index.Intersect(
+			response, err := s.Client.Query(s.Index.Intersect(
 				s.Frames["year"].Bitmap(uint64(year)),
 				s.Frames["pcount"].Bitmap(uint64(pcount)),
 			), nil)
+			if err != nil {
+				log.Printf("s.Client.Query: %v", err)
+			}
 			rows = append(rows, Predefined3Row{
 				response.Result().Count,
 				year,
