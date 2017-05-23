@@ -1,0 +1,6 @@
+package: github.com/pilosa/demo-taxi
+import:
+- package: github.com/gorilla/mux
+  version: ^1.4.0
+- package: github.com/pilosa/go-pilosa
+  version: ^0.3.1
