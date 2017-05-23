@@ -122,7 +122,7 @@ func (s *Server) HandlePredefined2(w http.ResponseWriter, r *http.Request) {
 		go s.avgCostForPassengerCount(pcount, resp.AvgPerPassengerAmount, wg)
 	}
 	wg.Wait()
-	resp.Seconds = time.Now().Sub(start).Seconds()
+	resp.Seconds = time.Since(start).Seconds()
 
 	enc := json.NewEncoder(w)
 	err := enc.Encode(resp)
@@ -152,7 +152,9 @@ func (s *Server) avgCostForPassengerCount(count int, values []float64, wg *sync.
 	}
 	pcBitmap := pcFrame.Bitmap(uint64(count))
 	query := tadFrame.BitmapTopN(1000, pcBitmap)
+	qtime := time.Now()
 	results, err := s.Client.Query(query, nil)
+	log.Printf("query time for passenger count: %v is %v", count, time.Since(qtime).Seconds())
 	if err != nil {
 		log.Printf("query %v failed with: %v", query, err)
 		return
