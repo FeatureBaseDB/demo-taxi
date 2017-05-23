@@ -49,7 +49,7 @@ func NewServer(pilosaAddr string) (*Server, error) {
 	//router.HandleFunc("/query/topn", server.HandleTopN).Methods("GET")
 	//router.HandleFunc("/predefined/1", server.HandlePredefined1).Methods("GET")
 	router.HandleFunc("/predefined/2", server.HandlePredefined2).Methods("GET")
-	router.HandleFunc("/predefined/3", server.HandlePredefined3Serial).Methods("GET")
+	router.HandleFunc("/predefined/3", server.HandlePredefined3).Methods("GET")
 	router.HandleFunc("/predefined/4", server.HandlePredefined4).Methods("GET")
 	//router.HandleFunc("/predefined/5", server.HandlePredefined5).Methods("GET")
 
@@ -169,70 +169,50 @@ func (s *Server) avgCostForPassengerCount(count int, values []float64, wg *sync.
 func (s *Server) HandlePredefined3(w http.ResponseWriter, r *http.Request) {
 	// NxM queries, N, M = cardinality of passenger_count (8), year (7) - medium priority
 	t := time.Now()
-	numRides := s.getRideCount()
-	rows := make([]Predefined3Row, 40)
-	// queries go here
-	dif := time.Since(t)
-
-	err := json.NewEncoder(w).Encode(predefined3Response{
-		numRides,
-		"Profile count by (year, passenger_count) (Mark #3) (go)",
-		float64(dif.Seconds()),
-		rows,
-	})
-
-	if err != nil {
-		log.Printf("result encoding error: %s\n", err)
-	}
-
-}
-
-func (s *Server) HandlePredefined3Serial(w http.ResponseWriter, r *http.Request) {
-	// NxM queries, N, M = cardinality of passenger_count (8), year (7) - medium priority
-
-	t := time.Now()
-	numRides := s.getRideCount()
-	rows := make([]Predefined3Row, 40)
+	resp := predefined3Response{}
+	resp.Rows = make([]predefined3Row, 0, 56)
+	rowChan := make(chan predefined3Row, 56)
 
 	for year := 2009; year <= 2016; year++ {
 		for pcount := 1; pcount <= 7; pcount++ {
-			response, err := s.Client.Query(s.Index.Intersect(
-				s.Frames["pickup_year"].Bitmap(uint64(year)),
-				s.Frames["passenger_count"].Bitmap(uint64(pcount)),
-			), nil)
-			if err != nil {
-				log.Printf("s.Client.Query: %v", err)
-			}
-			rows = append(rows, Predefined3Row{
-				response.Result().Count,
-				year,
-				pcount,
-			})
+			go s.countPerYearPcount(year, pcount, rowChan)
 		}
+	}
+	for i := 0; i < 56; i++ {
+		resp.Rows = append(resp.Rows, <-rowChan)
 	}
 	dif := time.Since(t)
 
-	err := json.NewEncoder(w).Encode(predefined3Response{
-		numRides,
-		"Profile count by (year, passenger_count) (Mark #3) (go)",
-		float64(dif.Seconds()),
-		rows,
-	})
+	resp.NumRides = s.getRideCount()
+	resp.Seconds = float64(dif.Seconds())
+	resp.Description = "Profile count by (year, passenger_count) (Mark #3) (go)"
 
+	err := json.NewEncoder(w).Encode(resp)
 	if err != nil {
-		fmt.Printf("result encoding error: %s\n", err)
+		log.Printf("result encoding error: %s\n", err)
 	}
+}
 
+func (s *Server) countPerYearPcount(year, pcount int, rows chan predefined3Row) {
+	q := s.Index.Count(s.Index.Intersect(
+		s.Frames["pickup_year"].Bitmap(uint64(year)),
+		s.Frames["passenger_count"].Bitmap(uint64(pcount)),
+	))
+	response, err := s.Client.Query(q, nil)
+	if err != nil {
+		log.Printf("query %v failed with: %v", q, err)
+	}
+	rows <- predefined3Row{response.Result().Count,	year, pcount}
 }
 
 type predefined3Response struct {
 	NumRides    uint64           `json:"numProfiles"`
 	Description string           `json:"description"`
 	Seconds     float64          `json:"seconds"`
-	Rows        []Predefined3Row `json:"rows"`
+	Rows        []predefined3Row `json:"rows"`
 }
 
-type Predefined3Row struct {
+type predefined3Row struct {
 	Count          uint64 `json:"count"`
 	Year           int    `json:"year"`
 	PassengerCount int    `json:"passenger_count"`
