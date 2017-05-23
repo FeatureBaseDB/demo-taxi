@@ -93,11 +93,17 @@ func NewServer() (*Server, error) {
 		return nil, fmt.Errorf("client.EnsureFrame: %v", err)
 	}
 
+	total_frame, err := index.Frame("total_amount_dollars", nil)
+	if err != nil {
+		return nil, fmt.Errorf("index.Frame: %v", err)
+	}
+
 	frames := map[string]*pilosa.Frame{
-		"year":    yearFrame,
-		"pcount":  pcountFrame,
-		"dist":    distFrame,
-		"cabtype": typeFrame,
+		"year":                 yearFrame,
+		"pcount":               pcountFrame,
+		"dist":                 distFrame,
+		"cabtype":              typeFrame,
+		"total_amount_dollars": total_frame,
 	}
 
 	server.Router = router
@@ -132,13 +138,13 @@ func (s *Server) Serve() {
 func (s *Server) HandlePredefined2(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 
-	var wg *sync.WaitGroup
+	var wg = &sync.WaitGroup{}
 	maxpcount := 8
 	resp := predefined2Response{}
-	resp.AvgPerPassengerCount = make([]float64, maxpcount+1)
+	resp.AvgPerPassengerAmount = make([]float64, maxpcount+1)
 	for pcount := 1; pcount <= maxpcount; pcount++ {
 		wg.Add(1)
-		go s.avgCostForPassengerCount(pcount, resp.AvgPerPassengerCount, wg)
+		go s.avgCostForPassengerCount(pcount, resp.AvgPerPassengerAmount, wg)
 	}
 	wg.Wait()
 	resp.Seconds = time.Now().Sub(start).Seconds()
@@ -151,9 +157,9 @@ func (s *Server) HandlePredefined2(w http.ResponseWriter, r *http.Request) {
 }
 
 type predefined2Response struct {
-	AvgPerPassengerCount []float64 `json:"avgPerPassengerCount"`
-	Description          string    `json:"description"`
-	Seconds              float64   `json:"seconds"`
+	AvgPerPassengerAmount []float64 `json:"avgCostPerPassengerCount"`
+	Description           string    `json:"description"`
+	Seconds               float64   `json:"seconds"`
 }
 
 func (s *Server) avgCostForPassengerCount(count int, values []float64, wg *sync.WaitGroup) {
@@ -161,7 +167,16 @@ func (s *Server) avgCostForPassengerCount(count int, values []float64, wg *sync.
 	// TopN(frame=total_amount_dollars, Bitmap(frame=passenger_count, rowID=pcount))
 	// for each $ amount, add amnt*num_rides to total amount and add num_rides to total rides.
 	// now just calc avg
-	query := s.Frames["total_amount_dollars"].BitmapTopN(1000, s.Frames["passenger_count"].Bitmap(uint64(count)))
+	tadFrame, ok := s.Frames["total_amount_dollars"]
+	if !ok {
+		log.Println("total_amount_dollars frame doesn't exist")
+	}
+	pcFrame, ok := s.Frames["pcount"]
+	if !ok {
+		log.Println("passenger_count frame doesn't exist")
+	}
+	pcBitmap := pcFrame.Bitmap(uint64(count))
+	query := tadFrame.BitmapTopN(1000, pcBitmap)
 	results, err := s.Client.Query(query, nil)
 	if err != nil {
 		log.Printf("query %v failed with: %v", query, err)
