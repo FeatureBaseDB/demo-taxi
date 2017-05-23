@@ -47,7 +47,7 @@ func NewServer(pilosaAddr string) (*Server, error) {
 	//router.HandleFunc("/assets/{file}", server.HandleFrontend).Methods("GET")
 	//router.HandleFunc("/query/intersect", server.HandleIntersect).Methods("GET")
 	//router.HandleFunc("/query/topn", server.HandleTopN).Methods("GET")
-	//router.HandleFunc("/predefined/1", server.HandlePredefined1).Methods("GET")
+	router.HandleFunc("/predefined/1", server.HandlePredefined1).Methods("GET")
 	router.HandleFunc("/predefined/2", server.HandlePredefined2).Methods("GET")
 	router.HandleFunc("/predefined/3", server.HandlePredefined3).Methods("GET")
 	router.HandleFunc("/predefined/4", server.HandlePredefined4).Methods("GET")
@@ -108,6 +108,41 @@ func (s *Server) testQuery() error {
 func (s *Server) Serve() {
 	fmt.Println("listening at :8000")
 	log.Fatal(http.ListenAndServe(":8000", s.Router))
+}
+
+func (s *Server) HandlePredefined1(w http.ResponseWriter, r *http.Request) {
+	// N queries, N = cardinality of cab_type (3) - lowest priority
+	start := time.Now()
+
+	resp := predefined1Response{}
+	resp.Rows = make([]predefined1Row, 0, 5)
+	q := s.Frames["cab_type"].TopN(5)
+	response, err := s.Client.Query(q, nil)
+	if err != nil {
+		log.Printf("query %v failed with: %v", q, err)
+	}
+	resp.Seconds = time.Now().Sub(start).Seconds()
+
+	for _, c := range response.Result().CountItems {
+		resp.Rows = append(resp.Rows, predefined1Row{c.ID, c.Count})
+	}
+
+	enc := json.NewEncoder(w)
+	err = enc.Encode(resp)
+	if err != nil {
+		log.Printf("writing results: %v to responsewriter: %v", resp, err)
+	}
+}
+
+type predefined1Response struct {
+	Rows        []predefined1Row `json:"Rows"`
+	Description string           `json:"description"`
+	Seconds     float64          `json:"seconds"`
+}
+
+type predefined1Row struct {
+	CabType uint64 `json:"cab_type"`
+	Count   uint64 `json:"count"`
 }
 
 func (s *Server) HandlePredefined2(w http.ResponseWriter, r *http.Request) {
@@ -279,10 +314,6 @@ func HandleIntersect(w http.ResponseWriter, r *http.Request) {
 
 func HandleTopN(w http.ResponseWriter, r *http.Request) {
 	// only runs one query - fine in python
-}
-
-func HandlePredefined1(w http.ResponseWriter, r *http.Request) {
-	// N queries, N = cardinality of cab_type (3) - lowest priority
 }
 
 func HandlePredefined5(w http.ResponseWriter, r *http.Request) {
