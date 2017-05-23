@@ -10,6 +10,7 @@ import (
 
 	"github.com/gorilla/mux"
 	pilosa "github.com/pilosa/go-pilosa"
+	"github.com/spf13/pflag"
 )
 
 const host = ":10101"
@@ -17,7 +18,10 @@ const indexName = "taxi"
 const percentThreshold = 90
 
 func main() {
-	server, err := NewServer()
+	pilosaAddr := pflag.String("pilosa", "localhost:10101", "host:port for pilosa")
+	pflag.Parse()
+
+	server, err := NewServer(*pilosaAddr)
 	if err != nil {
 		log.Fatalf("getting new server: %v", err)
 	}
@@ -33,7 +37,7 @@ type Server struct {
 	Frames map[string]*pilosa.Frame
 }
 
-func NewServer() (*Server, error) {
+func NewServer(pilosaAddr string) (*Server, error) {
 	server := &Server{
 		Frames: make(map[string]*pilosa.Frame),
 	}
@@ -49,7 +53,11 @@ func NewServer() (*Server, error) {
 	router.HandleFunc("/predefined/4", server.HandlePredefined4).Methods("GET")
 	//router.HandleFunc("/predefined/5", server.HandlePredefined5).Methods("GET")
 
-	client := pilosa.DefaultClient()
+	pilosaURI, err := pilosa.NewURIFromAddress(pilosaAddr)
+	if err != nil {
+		return nil, err
+	}
+	client := pilosa.NewClientWithURI(pilosaURI)
 	index, err := pilosa.NewIndex(indexName, nil)
 	if err != nil {
 		return nil, fmt.Errorf("pilosa.NewIndex: %v", err)
