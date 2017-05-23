@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -41,7 +42,7 @@ func NewServer() (*Server, error) {
 	//router.HandleFunc("/query/intersect", server.HandleIntersect).Methods("GET")
 	//router.HandleFunc("/query/topn", server.HandleTopN).Methods("GET")
 	//router.HandleFunc("/predefined/1", server.HandlePredefined1).Methods("GET")
-	//router.HandleFunc("/predefined/2", server.HandlePredefined2).Methods("GET")
+	router.HandleFunc("/predefined/2", server.HandlePredefined2).Methods("GET")
 	router.HandleFunc("/predefined/3", server.HandlePredefined3Serial).Methods("GET")
 	router.HandleFunc("/predefined/4", server.HandlePredefined4).Methods("GET")
 	//router.HandleFunc("/predefined/5", server.HandlePredefined5).Methods("GET")
@@ -120,11 +121,59 @@ func (s *Server) testQuery() error {
 		bits := result.Bitmap.Bits
 		fmt.Printf("Got bits: %v\n", bits)
 	}
+	return nil
 }
 
 func (s *Server) Serve() {
 	fmt.Println("listening at :8000")
 	log.Fatal(http.ListenAndServe(":8000", s.Router))
+}
+
+func (s *Server) HandlePredefined2(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+
+	var wg *sync.WaitGroup
+	maxpcount := 8
+	resp := predefined2Response{}
+	resp.AvgPerPassengerCount = make([]float64, maxpcount+1)
+	for pcount := 1; pcount <= maxpcount; pcount++ {
+		wg.Add(1)
+		go s.avgCostForPassengerCount(pcount, resp.AvgPerPassengerCount, wg)
+	}
+	wg.Wait()
+	resp.Seconds = time.Now().Sub(start).Seconds()
+
+	enc := json.NewEncoder(w)
+	err := enc.Encode(resp)
+	if err != nil {
+		log.Printf("writing results: %v to responsewriter: %v", resp, err)
+	}
+}
+
+type predefined2Response struct {
+	AvgPerPassengerCount []float64 `json:"avgPerPassengerCount"`
+	Description          string    `json:"description"`
+	Seconds              float64   `json:"seconds"`
+}
+
+func (s *Server) avgCostForPassengerCount(count int, values []float64, wg *sync.WaitGroup) {
+	defer wg.Done()
+	// TopN(frame=total_amount_dollars, Bitmap(frame=passenger_count, rowID=pcount))
+	// for each $ amount, add amnt*num_rides to total amount and add num_rides to total rides.
+	// now just calc avg
+	query := s.Frames["total_amount_dollars"].BitmapTopN(1000, s.Frames["passenger_count"].Bitmap(uint64(count)))
+	results, err := s.Client.Query(query, nil)
+	if err != nil {
+		log.Printf("query %v failed with: %v", query, err)
+		return
+	}
+	var num_rides uint64 = 0
+	var total_amount uint64 = 0
+	for _, cri := range results.Results()[0].CountItems {
+		num_rides += cri.Count
+		total_amount += cri.ID * cri.Count
+	}
+	values[count] = float64(total_amount) / float64(num_rides)
 }
 
 func (s *Server) HandlePredefined3(w http.ResponseWriter, r *http.Request) {
@@ -262,10 +311,6 @@ func HandleTopN(w http.ResponseWriter, r *http.Request) {
 
 func HandlePredefined1(w http.ResponseWriter, r *http.Request) {
 	// N queries, N = cardinality of cab_type (3) - lowest priority
-}
-
-func HandlePredefined2(w http.ResponseWriter, r *http.Request) {
-	// N queries, N = cardinality of passenger_count (8) - low priority
 }
 
 func HandlePredefined5(w http.ResponseWriter, r *http.Request) {
