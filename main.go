@@ -73,7 +73,7 @@ func NewServer() *Server {
 	return server
 }
 
-func (s Server) testQuery() {
+func (s *Server) testQuery() {
 	// Send a Bitmap query. PilosaException is thrown if execution of the query fails.
 	response, _ := s.Client.Query(s.Frames["year"].Bitmap(2013), nil)
 
@@ -86,12 +86,12 @@ func (s Server) testQuery() {
 	}
 }
 
-func (s Server) Serve() {
+func (s *Server) Serve() {
 	fmt.Println("listening at :8000")
 	log.Fatal(http.ListenAndServe(":8000", s.Router))
 }
 
-func (s Server) HandlePredefined3(w http.ResponseWriter, r *http.Request) {
+func (s *Server) HandlePredefined3(w http.ResponseWriter, r *http.Request) {
 	// NxM queries, N, M = cardinality of passenger_count (8), year (7) - medium priority
 	t := time.Now()
 	numRides := s.getRideCount()
@@ -112,7 +112,7 @@ func (s Server) HandlePredefined3(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (s Server) HandlePredefined3Serial(w http.ResponseWriter, r *http.Request) {
+func (s *Server) HandlePredefined3Serial(w http.ResponseWriter, r *http.Request) {
 	// NxM queries, N, M = cardinality of passenger_count (8), year (7) - medium priority
 
 	t := time.Now()
@@ -160,7 +160,7 @@ type Predefined3Row struct {
 	PassengerCount int    `json:"passenger_count"`
 }
 
-func (s Server) HandlePredefined4(w http.ResponseWriter, r *http.Request) {
+func (s *Server) HandlePredefined4(w http.ResponseWriter, r *http.Request) {
 	// NxMxP queries, N, M, P = cardinality of passenger_count (8), year (7), dist_miles (high) - high priority
 	t := time.Now()
 	numRides := s.getRideCount()
@@ -199,10 +199,11 @@ type Predefined4Row struct {
 	PickupYear     int    `json:"pickup_year"`
 }
 
-func (s Server) getRideCount() uint64 {
+func (s *Server) getRideCount() uint64 {
 	var count uint64 = 0
-	for n := 0; n < 10; n++ {
-		response, _ := s.Client.Query(s.Index.Count(s.Frames["cabtype"].Bitmap(uint64(n))), nil)
+	for n := 0; n < 3; n++ {
+		q := s.Index.Count(s.Frames["cabtype"].Bitmap(uint64(n)))
+		response, _ := s.Client.Query(q, nil)
 		count += response.Result().Count
 	}
 	return count
