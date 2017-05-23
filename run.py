@@ -49,9 +49,9 @@ namemap = {
 def index():
     return open('index.html', 'r').read()
 
-@app.route('/assets/favicon.ico')
+@app.route('/assets/favicon.png')
 def icon():
-    return Response(open('assets/favicon.ico', 'r').read(), mimetype='image/vnd.microsoft.icon')
+    return Response(open('assets/favicon.png', 'r').read(), mimetype='image/png')
 
 @app.route('/assets/main.js')
 def js():
