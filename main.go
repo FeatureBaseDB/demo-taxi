@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"sync"
 	"time"
+	"sort"
 
 	"github.com/gorilla/mux"
 	pilosa "github.com/pilosa/go-pilosa"
@@ -15,7 +16,7 @@ import (
 
 const host = ":10101"
 const indexName = "taxi"
-const percentThreshold = 90
+const percentThreshold = 95
 
 func main() {
 	pilosaAddr := pflag.String("pilosa", "localhost:10101", "host:port for pilosa")
@@ -26,15 +27,16 @@ func main() {
 		log.Fatalf("getting new server: %v", err)
 	}
 	//server.testQuery()
-	fmt.Printf("ride count: %d\n", server.getRideCount())
+	fmt.Printf("ride count: %d\n", server.NumRides)
 	server.Serve()
 }
 
 type Server struct {
-	Router *mux.Router
-	Client *pilosa.Client
-	Index  *pilosa.Index
-	Frames map[string]*pilosa.Frame
+	Router   *mux.Router
+	Client   *pilosa.Client
+	Index    *pilosa.Index
+	Frames   map[string]*pilosa.Frame
+	NumRides uint64
 }
 
 func NewServer(pilosaAddr string) (*Server, error) {
@@ -85,6 +87,7 @@ func NewServer(pilosaAddr string) (*Server, error) {
 	server.Router = router
 	server.Client = client
 	server.Index = index
+	server.NumRides = server.getRideCount()
 	return server, nil
 }
 
@@ -220,7 +223,7 @@ func (s *Server) HandlePredefined3(w http.ResponseWriter, r *http.Request) {
 	}
 	dif := time.Since(t)
 
-	resp.NumRides = s.getRideCount()
+	resp.NumRides = s.NumRides
 	resp.Seconds = float64(dif.Seconds())
 	resp.Description = "Profile count by (year, passenger_count) (Mark #3) (go)"
 
@@ -256,27 +259,70 @@ type predefined3Row struct {
 }
 
 func (s *Server) HandlePredefined4(w http.ResponseWriter, r *http.Request) {
-	// NxMxP queries, N, M, P = cardinality of passenger_count (8), year (7), dist_miles (high) - high priority
+	concurrency := 32
 	t := time.Now()
-	numRides := s.getRideCount()
-	rows := make([]Predefined4Row, 100)
 
-	// queries go here
+	keys := make(chan predefined4Row)
+	rows := make(chan predefined4Row)
+	go func() {
+		for year := 2009; year <= 2016; year++ {
+			for pcount := 1; pcount <= 7; pcount++ {
+				for dist := 0; dist <= 50; dist++ {
+					keys <- predefined4Row{0, dist, pcount, year}
+				}
+			}
+		}
+		close(keys)
+	}()
 
+	for i := 0; i < concurrency; i++ {
+		go func() {
+			s.countPerYearPcountDist(keys, rows)
+		}()
+	}
+
+	resp := predefined4Response{}
+	resp.Rows = make([]predefined4Row, 0, 2500)
+
+	var pct float64
+	var totalRides uint64
+	for row := range rows {
+		resp.Rows = append(resp.Rows, row)
+		totalRides += row.Count
+		pct = 100 * float64(totalRides) / float64(s.NumRides)
+		if pct >= percentThreshold {
+			break
+		}
+	}
+
+	sort.Sort(byYearCount(resp.Rows))
 	dif := time.Since(t)
 
-	err := json.NewEncoder(w).Encode(predefined4Response{
-		numRides,
-		"Profile count by (year, passenger_count, trip_distsance), ordered by (year, count) (Mark #4) (go)",
-		float64(dif.Seconds()),
-		percentThreshold,
-		rows,
-	})
+	resp.NumRides = s.NumRides
+	resp.Description = "Profile count by (year, passenger_count, trip_distance), ordered by (year, count) (Mark #4) (go)"
+	resp.Seconds = float64(dif.Seconds())
+	resp.Threshold = percentThreshold
 
+	err := json.NewEncoder(w).Encode(resp)
 	if err != nil {
 		fmt.Printf("result encoding error: %s\n", err)
 	}
+}
 
+func (s *Server) countPerYearPcountDist(keys <-chan predefined4Row, rows chan<- predefined4Row) {
+	for key := range keys {
+		q := s.Index.Count(s.Index.Intersect(
+			s.Frames["pickup_year"].Bitmap(uint64(key.PickupYear)),
+			s.Frames["passenger_count"].Bitmap(uint64(key.PassengerCount)),
+			s.Frames["dist_miles"].Bitmap(uint64(key.Distance)),
+		))
+		response, err := s.Client.Query(q, nil)
+		if err != nil {
+			log.Printf("query %v failed with: %v", q, err)
+			return
+		}
+		rows <- predefined4Row{response.Result().Count,	key.Distance, key.PassengerCount, key.PickupYear}
+	}
 }
 
 type predefined4Response struct {
@@ -284,10 +330,24 @@ type predefined4Response struct {
 	Description string           `json:"description"`
 	Seconds     float64          `json:"seconds"`
 	Threshold   float64          `json:"percentageThreshold"`
-	Rows        []Predefined4Row `json:"rows"`
+	Rows        []predefined4Row `json:"rows"`
 }
 
-type Predefined4Row struct {
+type byYearCount []predefined4Row
+
+func (a byYearCount) Len() int           { return len(a) }
+func (a byYearCount) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a byYearCount) Less(i, j int) bool { 
+    if a[i].PickupYear < a[j].PickupYear {
+       return true
+    }
+    if a[i].Count < a[j].Count {
+       return true
+    }
+    return false
+}
+
+type predefined4Row struct {
 	Count          uint64 `json:"count"`
 	Distance       int    `json:"distance"`
 	PassengerCount int    `json:"passenger_count"`
