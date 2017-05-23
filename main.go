@@ -1,3 +1,5 @@
+//go:generate statik -src=./static
+
 package main
 
 import (
@@ -8,8 +10,10 @@ import (
 	"sync"
 	"time"
 
+	_ "./statik"
 	"github.com/gorilla/mux"
 	pilosa "github.com/pilosa/go-pilosa"
+	"github.com/rakyll/statik/fs"
 	"github.com/spf13/pflag"
 )
 
@@ -43,8 +47,8 @@ func NewServer(pilosaAddr string) (*Server, error) {
 	}
 
 	router := mux.NewRouter()
-	//router.HandleFunc("/", server.HandleFrontend).Methods("GET")
-	//router.HandleFunc("/assets/{file}", server.HandleFrontend).Methods("GET")
+	router.HandleFunc("/", server.HandleStatic).Methods("GET")
+	router.HandleFunc("/assets/{file}", server.HandleStatic).Methods("GET")
 	//router.HandleFunc("/query/intersect", server.HandleIntersect).Methods("GET")
 	//router.HandleFunc("/query/topn", server.HandleTopN).Methods("GET")
 	//router.HandleFunc("/predefined/1", server.HandlePredefined1).Methods("GET")
@@ -108,6 +112,18 @@ func (s *Server) testQuery() error {
 func (s *Server) Serve() {
 	fmt.Println("listening at :8000")
 	log.Fatal(http.ListenAndServe(":8000", s.Router))
+}
+
+func (s *Server) HandleStatic(w http.ResponseWriter, r *http.Request) {
+	log.Println("handling")
+	statikFS, err := fs.New()
+	if err != nil {
+		errorText := "Static assets missing. Run `go generate`"
+		http.Error(w, errorText, http.StatusInternalServerError)
+		log.Println(errorText)
+		return
+	}
+	http.FileServer(statikFS).ServeHTTP(w, r)
 }
 
 func (s *Server) HandlePredefined2(w http.ResponseWriter, r *http.Request) {
