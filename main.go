@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 	"sort"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	pilosa "github.com/pilosa/go-pilosa"
@@ -47,8 +48,8 @@ func NewServer(pilosaAddr string) (*Server, error) {
 	router := mux.NewRouter()
 	//router.HandleFunc("/", server.HandleFrontend).Methods("GET")
 	//router.HandleFunc("/assets/{file}", server.HandleFrontend).Methods("GET")
-	//router.HandleFunc("/query/intersect", server.HandleIntersect).Methods("GET")
-	//router.HandleFunc("/query/topn", server.HandleTopN).Methods("GET")
+	router.HandleFunc("/query/intersect", server.HandleIntersect).Methods("GET")
+	router.HandleFunc("/query/topn", server.HandleTopN).Methods("GET")
 	router.HandleFunc("/predefined/1", server.HandlePredefined1).Methods("GET")
 	router.HandleFunc("/predefined/2", server.HandlePredefined2).Methods("GET")
 	router.HandleFunc("/predefined/3", server.HandlePredefined3TopN).Methods("GET")
@@ -112,6 +113,91 @@ func (s *Server) Serve() {
 	fmt.Println("listening at :8000")
 	log.Fatal(http.ListenAndServe(":8000", s.Router))
 }
+
+func (s *Server) HandleIntersect(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+
+	bitmaps := make([]*pilosa.PQLBitmapQuery, 0, 5)
+	for frame, id := range r.URL.Query() {
+		rowID, err := strconv.Atoi(id[0])
+		if id[0] == "" || err != nil {
+			continue
+		}
+		bitmaps = append(bitmaps, s.Frames[frame].Bitmap(uint64(rowID)))
+	}
+
+	if len(bitmaps) < 2 {
+		log.Printf("need 2+ bitmaps for intersect\n")
+		return
+	}
+	q := s.Index.Count(s.Index.Intersect(bitmaps[0], bitmaps[1], bitmaps[2:]...))
+	response, err := s.Client.Query(q, nil)
+
+	dif := time.Since(start)
+
+	resp := intersectResponse{}
+	resp.NumRides = s.NumRides
+	resp.Seconds = float64(dif.Seconds())
+	resp.Query = ""
+	resp.Rows = []intersectRow{intersectRow{response.Result().Count}}
+
+	enc := json.NewEncoder(w)
+	err = enc.Encode(resp)
+	if err != nil {
+		log.Printf("writing results: %v to responsewriter: %v", resp, err)
+	}
+}
+
+type intersectResponse struct {
+	Rows     []intersectRow `json:"rows"`
+	Query    string         `json:"query"`
+	Seconds  float64        `json:"seconds"`
+	NumRides uint64         `json:"numProfiles"`
+}
+
+type intersectRow struct {
+	Count   uint64 `json:"count"`
+}
+
+func (s *Server) HandleTopN(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+
+	frame := r.URL.Query()["frame"][0]
+	q := s.Frames[frame].TopN(0)
+
+	response, err := s.Client.Query(q, nil)
+
+	dif := time.Since(start)
+
+	resp := topnResponse{}
+	resp.Rows = make([]topnRow, 0, 50)
+	resp.NumRides = s.NumRides
+	resp.Seconds = float64(dif.Seconds())
+	resp.Query = ""
+
+	for _, ci := range response.Result().CountItems {
+		resp.Rows = append(resp.Rows, topnRow{ci.ID, ci.Count})
+	}
+
+	enc := json.NewEncoder(w)
+	err = enc.Encode(resp)
+	if err != nil {
+		log.Printf("writing results: %v to responsewriter: %v", resp, err)
+	}
+}
+
+type topnResponse struct {
+	Rows     []topnRow `json:"rows"`
+	Query    string    `json:"query"`
+	Seconds  float64   `json:"seconds"`
+	NumRides uint64    `json:"numProfiles"`
+}
+
+type topnRow struct {
+	RowId   uint64 `json:"bitmapID"`
+	Count   uint64 `json:"count"`
+}
+
 
 func (s *Server) HandlePredefined1(w http.ResponseWriter, r *http.Request) {
 	// N queries, N = cardinality of cab_type (3) - lowest priority
@@ -480,14 +566,6 @@ func (s *Server) getRideCount() uint64 {
 
 func HandleFrontend(w http.ResponseWriter, r *http.Request) {
 	// static - fine in python
-}
-
-func HandleIntersect(w http.ResponseWriter, r *http.Request) {
-	// only runs one query - fine in python
-}
-
-func HandleTopN(w http.ResponseWriter, r *http.Request) {
-	// only runs one query - fine in python
 }
 
 func HandlePredefined5(w http.ResponseWriter, r *http.Request) {
