@@ -290,11 +290,8 @@ func (s *Server) HandlePredefined1(w http.ResponseWriter, r *http.Request) {
 	for _, c := range response.Result().CountItems {
 		resp.Rows = append(resp.Rows, predefined1Row{c.ID, c.Count})
 	}
-<<<<<<< 351b94e9157d116c767001939163280a68c1b50a
-	fmt.Printf("%+v\n", resp)
+
 	resp.Seconds = time.Now().Sub(start).Seconds()
-=======
->>>>>>> remove some debug prints
 
 	enc := json.NewEncoder(w)
 	err = enc.Encode(resp)
