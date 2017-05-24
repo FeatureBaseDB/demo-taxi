@@ -51,7 +51,7 @@ func NewServer(pilosaAddr string) (*Server, error) {
 	//router.HandleFunc("/query/topn", server.HandleTopN).Methods("GET")
 	router.HandleFunc("/predefined/1", server.HandlePredefined1).Methods("GET")
 	router.HandleFunc("/predefined/2", server.HandlePredefined2).Methods("GET")
-	router.HandleFunc("/predefined/3", server.HandlePredefined3).Methods("GET")
+	router.HandleFunc("/predefined/3", server.HandlePredefined3TopN).Methods("GET")
 	router.HandleFunc("/predefined/4", server.HandlePredefined4).Methods("GET")
 	//router.HandleFunc("/predefined/5", server.HandlePredefined5).Methods("GET")
 
@@ -204,6 +204,49 @@ func (s *Server) avgCostForPassengerCount(count int, values []float64, wg *sync.
 		total_amount += cri.ID * cri.Count
 	}
 	values[count] = float64(total_amount) / float64(num_rides)
+}
+
+func (s *Server) HandlePredefined3TopN(w http.ResponseWriter, r *http.Request) {
+	// NxM queries, N, M = cardinality of passenger_count (8), year (7) - medium priority
+	t := time.Now()
+	resp := predefined3Response{}
+	resp.Rows = make([]predefined3Row, 0, 56)
+	rowChan := make(chan predefined3Row, 56)
+	var wg = &sync.WaitGroup{}
+
+	for year := 2009; year <= 2016; year++ {
+		wg.Add(1)
+		go s.pcountTopNPerYear(year, rowChan, wg)
+	}
+	wg.Wait()
+	close(rowChan)
+	for row := range rowChan {
+		fmt.Println(row)
+		resp.Rows = append(resp.Rows, row)
+	}
+	dif := time.Since(t)
+
+	resp.NumRides = s.NumRides
+	resp.Seconds = float64(dif.Seconds())
+	resp.Description = "Profile count by (year, passenger_count) (Mark #3) (go)"
+
+	err := json.NewEncoder(w).Encode(resp)
+	if err != nil {
+		log.Printf("result encoding error: %s\n", err)
+	}
+}
+
+func (s *Server) pcountTopNPerYear(year int, rows chan predefined3Row, wg *sync.WaitGroup) {
+	defer wg.Done()
+	q := s.Frames["passenger_count"].BitmapTopN(10, s.Frames["pickup_year"].Bitmap(uint64(year)))
+	response, err := s.Client.Query(q, nil)
+	if err != nil {
+		log.Printf("query %v failed with %v", q, err)
+	}
+	fmt.Printf("%+v\n", response.Result())
+	for _, ci := range response.Results()[0].CountItems {
+		rows <- predefined3Row{ci.Count, year, int(ci.ID)}
+	}
 }
 
 func (s *Server) HandlePredefined3(w http.ResponseWriter, r *http.Request) {
