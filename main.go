@@ -56,8 +56,8 @@ func NewServer(pilosaAddr string) (*Server, error) {
 	router.HandleFunc("/query/topn", server.HandleTopN).Methods("GET")
 	router.HandleFunc("/predefined/1", server.HandlePredefined1).Methods("GET")
 	router.HandleFunc("/predefined/2", server.HandlePredefined2).Methods("GET")
-	router.HandleFunc("/predefined/3", server.HandlePredefined3TopN).Methods("GET")
-	router.HandleFunc("/predefined/4", server.HandlePredefined4TopN).Methods("GET")
+	router.HandleFunc("/predefined/3", server.HandlePredefined3).Methods("GET")
+	router.HandleFunc("/predefined/4", server.HandlePredefined4).Methods("GET")
 	//router.HandleFunc("/predefined/5", server.HandlePredefined5).Methods("GET")
 
 	pilosaURI, err := pilosa.NewURIFromAddress(pilosaAddr)
@@ -114,7 +114,7 @@ func (s *Server) testQuery() error {
 }
 
 func (s *Server) Serve() {
-	fmt.Println("listening at :8000")
+	fmt.Println("running at localhost:8000")
 	log.Fatal(http.ListenAndServe(":8000", s.Router))
 }
 
@@ -308,7 +308,7 @@ func (s *Server) avgCostForPassengerCount(count int, values []float64, wg *sync.
 	values[count] = float64(total_amount) / float64(num_rides)
 }
 
-func (s *Server) HandlePredefined3TopN(w http.ResponseWriter, r *http.Request) {
+func (s *Server) HandlePredefined3(w http.ResponseWriter, r *http.Request) {
 	// NxM queries, N, M = cardinality of passenger_count (8), year (7) - medium priority
 	t := time.Now()
 	resp := predefined3Response{}
@@ -353,45 +353,6 @@ func (s *Server) pcountTopNPerYear(year int, rows chan predefined3Row, wg *sync.
 	}
 }
 
-func (s *Server) HandlePredefined3(w http.ResponseWriter, r *http.Request) {
-	// NxM queries, N, M = cardinality of passenger_count (8), year (7) - medium priority
-	t := time.Now()
-	resp := predefined3Response{}
-	resp.Rows = make([]predefined3Row, 0, 56)
-	rowChan := make(chan predefined3Row, 56)
-
-	for year := 2009; year <= 2016; year++ {
-		for pcount := 1; pcount <= 7; pcount++ {
-			go s.countPerYearPcount(year, pcount, rowChan)
-		}
-	}
-	for i := 0; i < 56; i++ {
-		resp.Rows = append(resp.Rows, <-rowChan)
-	}
-	dif := time.Since(t)
-
-	resp.NumRides = s.NumRides
-	resp.Seconds = float64(dif.Seconds())
-	resp.Description = "Profile count by (year, passenger_count) (Mark #3) (go)"
-
-	err := json.NewEncoder(w).Encode(resp)
-	if err != nil {
-		log.Printf("result encoding error: %s\n", err)
-	}
-}
-
-func (s *Server) countPerYearPcount(year, pcount int, rows chan predefined3Row) {
-	q := s.Index.Count(s.Index.Intersect(
-		s.Frames["pickup_year"].Bitmap(uint64(year)),
-		s.Frames["passenger_count"].Bitmap(uint64(pcount)),
-	))
-	response, err := s.Client.Query(q, nil)
-	if err != nil {
-		log.Printf("query %v failed with: %v", q, err)
-	}
-	rows <- predefined3Row{response.Result().Count,	year, pcount}
-}
-
 type predefined3Response struct {
 	NumRides    uint64           `json:"numProfiles"`
 	Description string           `json:"description"`
@@ -405,59 +366,7 @@ type predefined3Row struct {
 	PassengerCount int    `json:"passenger_count"`
 }
 
-
 func (s *Server) HandlePredefined4(w http.ResponseWriter, r *http.Request) {
-	concurrency := 32
-	t := time.Now()
-
-	keys := make(chan predefined4Row)
-	rows := make(chan predefined4Row)
-	go func() {
-		for year := 2009; year <= 2016; year++ {
-			for pcount := 1; pcount <= 7; pcount++ {
-				for dist := 0; dist <= 50; dist++ {
-					keys <- predefined4Row{0, dist, pcount, year}
-				}
-			}
-		}
-		close(keys)
-	}()
-
-	for i := 0; i < concurrency; i++ {
-		go func() {
-			s.countPerYearPcountDist(keys, rows)
-		}()
-	}
-
-	resp := predefined4Response{}
-	resp.Rows = make([]predefined4Row, 0, 2500)
-
-	var pct float64
-	var totalRides uint64
-	for row := range rows {
-		resp.Rows = append(resp.Rows, row)
-		totalRides += row.Count
-		pct = 100 * float64(totalRides) / float64(s.NumRides)
-		if pct >= percentThreshold {
-			break
-		}
-	}
-
-	sort.Sort(byYearCount(resp.Rows))
-	dif := time.Since(t)
-
-	resp.NumRides = s.NumRides
-	resp.Description = "Profile count by (year, passenger_count, trip_distance), ordered by (year, count) (Mark #4) (go)"
-	resp.Seconds = float64(dif.Seconds())
-	resp.Threshold = percentThreshold
-
-	err := json.NewEncoder(w).Encode(resp)
-	if err != nil {
-		fmt.Printf("result encoding error: %s\n", err)
-	}
-}
-
-func (s *Server) HandlePredefined4TopN(w http.ResponseWriter, r *http.Request) {
 	concurrency := 32
 	t := time.Now()
 
@@ -525,22 +434,6 @@ func (s *Server) distTopNPerYearPcount(keys <-chan predefined4Row, rows chan<- p
 	}
 }
 
-func (s *Server) countPerYearPcountDist(keys <-chan predefined4Row, rows chan<- predefined4Row) {
-	for key := range keys {
-		q := s.Index.Count(s.Index.Intersect(
-			s.Frames["pickup_year"].Bitmap(uint64(key.PickupYear)),
-			s.Frames["passenger_count"].Bitmap(uint64(key.PassengerCount)),
-			s.Frames["dist_miles"].Bitmap(uint64(key.Distance)),
-		))
-		response, err := s.Client.Query(q, nil)
-		if err != nil {
-			log.Printf("query %v failed with: %v", q, err)
-			return
-		}
-		rows <- predefined4Row{response.Result().Count,	key.Distance, key.PassengerCount, key.PickupYear}
-	}
-}
-
 type predefined4Response struct {
 	NumRides    uint64           `json:"numProfiles"`
 	Description string           `json:"description"`
@@ -578,10 +471,6 @@ func (s *Server) getRideCount() uint64 {
 		count += response.Result().Count
 	}
 	return count
-}
-
-func HandleFrontend(w http.ResponseWriter, r *http.Request) {
-	// static - fine in python
 }
 
 func HandlePredefined5(w http.ResponseWriter, r *http.Request) {
