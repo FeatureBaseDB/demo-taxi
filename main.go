@@ -290,8 +290,11 @@ func (s *Server) HandlePredefined1(w http.ResponseWriter, r *http.Request) {
 	for _, c := range response.Result().CountItems {
 		resp.Rows = append(resp.Rows, predefined1Row{c.ID, c.Count})
 	}
+<<<<<<< 351b94e9157d116c767001939163280a68c1b50a
 	fmt.Printf("%+v\n", resp)
 	resp.Seconds = time.Now().Sub(start).Seconds()
+=======
+>>>>>>> remove some debug prints
 
 	enc := json.NewEncoder(w)
 	err = enc.Encode(resp)
@@ -399,7 +402,6 @@ func (s *Server) HandlePredefined3(w http.ResponseWriter, r *http.Request) {
 		close(rowChan)
 	}()
 	for row := range rowChan {
-		fmt.Println(row)
 		resp.Rows = append(resp.Rows, row)
 	}
 	dif := time.Since(t)
@@ -421,7 +423,7 @@ func (s *Server) pcountTopNPerYear(year int, rows chan predefined3Row, wg *sync.
 	if err != nil {
 		log.Printf("query %v failed with %v", q, err)
 	}
-	fmt.Printf("%+v\n", response.Result())
+
 	for _, ci := range response.Results()[0].CountItems {
 		rows <- predefined3Row{ci.Count, year, int(ci.ID)}
 	}
@@ -574,6 +576,7 @@ func (s *Server) HandlePredefined5(w http.ResponseWriter, r *http.Request) {
 		y := c.ID / 100
 		resp.Rows = append(resp.Rows, predefined5Row{c.ID, c.Count, x, y})
 	}
+
 	resp.Seconds = time.Now().Sub(start).Seconds()
 
 	enc := json.NewEncoder(w)
