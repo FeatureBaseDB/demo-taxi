@@ -1,5 +1,5 @@
-hash: 356313499c540fa99b76737a28a6438346b5913dbbb22d12fd544a132d3bbf8d
-updated: 2017-05-23T10:39:17.386727471-05:00
+hash: 64e018cf04bd2e9d84caee718da296021af450c962a2360afa92f8ce0fb6b6d7
+updated: 2017-05-24T15:37:33.174582065-05:00
 imports:
 - name: github.com/golang/protobuf
   version: 18c9bb3261723cd5401db4d0c9fbc5c3b6c70fe8
@@ -13,4 +13,10 @@ imports:
   version: 04986e9f751f45f59d4f02fd29ad2a2ee7adadef
   subpackages:
   - internal
+- name: github.com/rakyll/statik
+  version: 89fe3459b5c829c32e89bdff9c43f18aad728f2f
+  subpackages:
+  - fs
+- name: github.com/spf13/pflag
+  version: f1d95a35e132e8a1868023a08932b14f0b8b8fcb
 testImports: []
