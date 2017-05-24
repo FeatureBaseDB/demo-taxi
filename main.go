@@ -137,6 +137,11 @@ func (s *Server) HandleIntersect(w http.ResponseWriter, r *http.Request) {
 	bitmaps := make([]*pilosa.PQLBitmapQuery, 0, 5)
 	bitmapHTML := make([]string, 0, 5)
 	for frame, id := range r.URL.Query() {
+		if id[0] == "Green" {
+			id[0] = "0"
+		} else if id[0] == "Yellow" {
+			id[0] = "1"
+		}
 		rowID, err := strconv.Atoi(id[0])
 		if id[0] == "" || err != nil {
 			continue
@@ -146,11 +151,15 @@ func (s *Server) HandleIntersect(w http.ResponseWriter, r *http.Request) {
 	}
 	formattedQuery := fmt.Sprintf("Count(Intersect(<br />&nbsp;&nbsp;%s<br />))", strings.Join(bitmapHTML, ",<br />&nbsp;&nbsp;"))
 
-	if len(bitmaps) < 2 {
-		log.Printf("need 2+ bitmaps for intersect\n")
+	var q pilosa.PQLQuery
+	if len(bitmaps) == 0 {
+		log.Printf("need at least one bitmap for intersect\n")
 		return
+	} else if len(bitmaps) == 1 {
+		q = s.Index.Count(bitmaps[0])
+	} else {
+		q = s.Index.Count(s.Index.Intersect(bitmaps[0], bitmaps[1], bitmaps[2:]...))
 	}
-	q := s.Index.Count(s.Index.Intersect(bitmaps[0], bitmaps[1], bitmaps[2:]...))
 	response, err := s.Client.Query(q, nil)
 
 	dif := time.Since(start)
