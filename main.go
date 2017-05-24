@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	_ "github.com/pilosa/demo-taxi/statik"
+	_ "./statik"
 	pilosa "github.com/pilosa/go-pilosa"
 	"github.com/rakyll/statik/fs"
 	"github.com/spf13/pflag"
@@ -209,12 +209,12 @@ func (s *Server) HandleTopN(w http.ResponseWriter, r *http.Request) {
 		resp := topNGridResponse{}
 		resp.NumRides = s.NumRides
 		resp.Description = "Pickup Locations"
-		resp.Seconds = float64(dif.Seconds())
 		for _, c := range response.Result().CountItems {
 			x := c.ID % 100
 			y := c.ID / 100
 			resp.Rows = append(resp.Rows, topNGridRow{c.ID, c.Count, x, y})
 		}
+		resp.Seconds = float64(dif.Seconds())
 		enc := json.NewEncoder(w)
 		err = enc.Encode(resp)
 		if err != nil {
@@ -224,7 +224,6 @@ func (s *Server) HandleTopN(w http.ResponseWriter, r *http.Request) {
 		resp := topnResponse{}
 		resp.Rows = make([]topnRow, 0, 50)
 		resp.NumRides = s.NumRides
-		resp.Seconds = float64(dif.Seconds())
 		resp.Query = fmt.Sprintf("TopN(frame=%s)", frame)
 
 		maxID := maxIDMap[frame]
@@ -237,6 +236,7 @@ func (s *Server) HandleTopN(w http.ResponseWriter, r *http.Request) {
 			}
 			resp.Rows = append(resp.Rows, topnRow{ci.ID, ci.Count})
 		}
+		resp.Seconds = float64(dif.Seconds())
 		enc := json.NewEncoder(w)
 		err = enc.Encode(resp)
 		if err != nil {
@@ -283,7 +283,6 @@ func (s *Server) HandlePredefined1(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := predefined1Response{}
-	resp.Seconds = time.Now().Sub(start).Seconds()
 	resp.Description = "Profile count by cab type (Mark #1)"
 	resp.NumRides = s.NumRides
 
@@ -292,6 +291,7 @@ func (s *Server) HandlePredefined1(w http.ResponseWriter, r *http.Request) {
 		resp.Rows = append(resp.Rows, predefined1Row{c.ID, c.Count})
 	}
 	fmt.Printf("%+v\n", resp)
+	resp.Seconds = time.Now().Sub(start).Seconds()
 
 	enc := json.NewEncoder(w)
 	err = enc.Encode(resp)
@@ -324,13 +324,13 @@ func (s *Server) HandlePredefined2(w http.ResponseWriter, r *http.Request) {
 		go s.avgCostForPassengerCount(pcount, arr, wg)
 	}
 	wg.Wait()
-	resp.Seconds = time.Since(start).Seconds()
 	resp.NumRides = s.NumRides
 	resp.Description = "average(total_amount) by passenger_count (Mark #2)"
 	resp.Rows = make([]predefined2Row, 0, maxpcount)
 	for id, amt := range arr {
 		resp.Rows = append(resp.Rows, predefined2Row{uint64(id), amt})
 	}
+	resp.Seconds = time.Since(start).Seconds()
 
 	enc := json.NewEncoder(w)
 	err := enc.Encode(resp)
@@ -565,7 +565,6 @@ func (s *Server) HandlePredefined5(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := predefined5Response{}
-	resp.Seconds = time.Now().Sub(start).Seconds()
 	resp.Description = "Count of pickup locations for top dropoff location"
 	resp.NumRides = s.NumRides
 
@@ -575,7 +574,7 @@ func (s *Server) HandlePredefined5(w http.ResponseWriter, r *http.Request) {
 		y := c.ID / 100
 		resp.Rows = append(resp.Rows, predefined5Row{c.ID, c.Count, x, y})
 	}
-	fmt.Printf("%+v\n", resp)
+	resp.Seconds = time.Now().Sub(start).Seconds()
 
 	enc := json.NewEncoder(w)
 	err = enc.Encode(resp)
