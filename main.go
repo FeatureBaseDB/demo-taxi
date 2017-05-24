@@ -218,8 +218,10 @@ func (s *Server) HandlePredefined3TopN(w http.ResponseWriter, r *http.Request) {
 		wg.Add(1)
 		go s.pcountTopNPerYear(year, rowChan, wg)
 	}
-	wg.Wait()
-	close(rowChan)
+	go func() {
+		wg.Wait()
+		close(rowChan)
+	}()
 	for row := range rowChan {
 		fmt.Println(row)
 		resp.Rows = append(resp.Rows, row)
