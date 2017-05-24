@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	_ "./statik"
+	_ "github.com/pilosa/demo-taxi/statik"
 	pilosa "github.com/pilosa/go-pilosa"
 	"github.com/rakyll/statik/fs"
 	"github.com/spf13/pflag"
