@@ -550,8 +550,16 @@ func (s *Server) getRideCount() uint64 {
 func (s *Server) HandlePredefined5(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 
-	q := s.Frames["drop_grid_id"].TopN(0)
+	dropFrame := s.Frames["drop_grid_id"]
+	q := dropFrame.TopN(1)
 	response, err := s.Client.Query(q, nil)
+	if err != nil {
+		log.Printf("query %v failed with: %v", q, err)
+	}
+	topDropoffID := response.Result().CountItems[0].ID
+
+	q = s.Frames["pickup_grid_id"].BitmapTopN(0, dropFrame.Bitmap(topDropoffID))
+	response, err = s.Client.Query(q, nil)
 	if err != nil {
 		log.Printf("query %v failed with: %v", q, err)
 	}
