@@ -52,7 +52,7 @@ func NewServer(pilosaAddr string) (*Server, error) {
 	router.HandleFunc("/predefined/1", server.HandlePredefined1).Methods("GET")
 	router.HandleFunc("/predefined/2", server.HandlePredefined2).Methods("GET")
 	router.HandleFunc("/predefined/3", server.HandlePredefined3TopN).Methods("GET")
-	router.HandleFunc("/predefined/4", server.HandlePredefined4).Methods("GET")
+	router.HandleFunc("/predefined/4", server.HandlePredefined4TopN).Methods("GET")
 	//router.HandleFunc("/predefined/5", server.HandlePredefined5).Methods("GET")
 
 	pilosaURI, err := pilosa.NewURIFromAddress(pilosaAddr)
@@ -303,6 +303,7 @@ type predefined3Row struct {
 	PassengerCount int    `json:"passenger_count"`
 }
 
+
 func (s *Server) HandlePredefined4(w http.ResponseWriter, r *http.Request) {
 	concurrency := 32
 	t := time.Now()
@@ -351,6 +352,74 @@ func (s *Server) HandlePredefined4(w http.ResponseWriter, r *http.Request) {
 	err := json.NewEncoder(w).Encode(resp)
 	if err != nil {
 		fmt.Printf("result encoding error: %s\n", err)
+	}
+}
+
+func (s *Server) HandlePredefined4TopN(w http.ResponseWriter, r *http.Request) {
+	concurrency := 32
+	t := time.Now()
+
+	keys := make(chan predefined4Row)
+	rows := make(chan predefined4Row)
+	go func() {
+		for year := 2009; year <= 2016; year++ {
+			for pcount := 1; pcount <= 7; pcount++ {
+				keys <- predefined4Row{0, 0, pcount, year}
+			}
+		}
+		close(keys)
+	}()
+
+	var wg = &sync.WaitGroup{}
+
+	for i := 0; i < concurrency; i++ {
+		wg.Add(1)
+		go func() {
+			s.distTopNPerYearPcount(keys, rows, wg)
+		}()
+	}
+	go func() {
+		wg.Wait()
+		close(rows)
+	}()
+
+	resp := predefined4Response{}
+	resp.Rows = make([]predefined4Row, 0, 2500)
+
+	for row := range rows {
+		resp.Rows = append(resp.Rows, row)
+	}
+
+	sort.Sort(byYearCount(resp.Rows))
+	dif := time.Since(t)
+
+	resp.NumRides = s.NumRides
+	resp.Description = "Profile count by (year, passenger_count, trip_distance), ordered by (year, count) (Mark #4) (go)"
+	resp.Seconds = float64(dif.Seconds())
+	resp.Threshold = percentThreshold
+
+	err := json.NewEncoder(w).Encode(resp)
+	if err != nil {
+		fmt.Printf("result encoding error: %s\n", err)
+	}
+}
+
+func (s *Server) distTopNPerYearPcount(keys <-chan predefined4Row, rows chan<- predefined4Row, wg *sync.WaitGroup) {
+	defer wg.Done()
+	for key := range keys {
+		qIntersect := s.Index.Intersect(
+			s.Frames["pickup_year"].Bitmap(uint64(key.PickupYear)),
+			s.Frames["passenger_count"].Bitmap(uint64(key.PassengerCount)),
+		)
+		q := s.Frames["dist_miles"].BitmapTopN(10, qIntersect)
+		response, err := s.Client.Query(q, nil)
+		if err != nil {
+			log.Printf("query %v failed with: %v", q, err)
+			return
+		}
+		for _, ci := range response.Results()[0].CountItems {
+			rows <- predefined4Row{ci.Count, int(ci.ID), key.PassengerCount, key.PickupYear}
+		}
 	}
 }
 
