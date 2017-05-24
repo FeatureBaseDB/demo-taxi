@@ -7,14 +7,14 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"sync"
-	"time"
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 
-	_ "./statik"
 	"github.com/gorilla/mux"
+	_ "github.com/pilosa/demo-taxi/statik"
 	pilosa "github.com/pilosa/go-pilosa"
 	"github.com/rakyll/statik/fs"
 	"github.com/spf13/pflag"
@@ -176,13 +176,13 @@ type intersectResponse struct {
 }
 
 type intersectRow struct {
-	Count   uint64 `json:"count"`
+	Count uint64 `json:"count"`
 }
 
 var maxIDMap map[string]uint64 = map[string]uint64{
-	"speed_mph": 100,
-	"duration_minutes": 100,
-	"dist_miles": 40,
+	"speed_mph":            100,
+	"duration_minutes":     100,
+	"dist_miles":           40,
 	"total_amount_dollars": 100,
 }
 
@@ -228,10 +228,9 @@ type topnResponse struct {
 }
 
 type topnRow struct {
-	RowId   uint64 `json:"bitmapID"`
-	Count   uint64 `json:"count"`
+	RowId uint64 `json:"bitmapID"`
+	Count uint64 `json:"count"`
 }
-
 
 func (s *Server) HandlePredefined1(w http.ResponseWriter, r *http.Request) {
 	// N queries, N = cardinality of cab_type (3) - lowest priority
@@ -301,10 +300,10 @@ func (s *Server) HandlePredefined2(w http.ResponseWriter, r *http.Request) {
 }
 
 type predefined2Response struct {
-	Rows                  []predefined2Row `json:"rows"`
-	Description           string    `json:"description"`
-	Seconds               float64   `json:"seconds"`
-	NumRides              uint64    `json:"numProfiles"`
+	Rows        []predefined2Row `json:"rows"`
+	Description string           `json:"description"`
+	Seconds     float64          `json:"seconds"`
+	NumRides    uint64           `json:"numProfiles"`
 }
 
 type predefined2Row struct {
@@ -479,16 +478,16 @@ type predefined4Response struct {
 
 type byYearCount []predefined4Row
 
-func (a byYearCount) Len() int           { return len(a) }
-func (a byYearCount) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a byYearCount) Less(i, j int) bool { 
-    if a[i].PickupYear < a[j].PickupYear {
-       return true
-    }
-    if a[i].PickupYear == a[j].PickupYear && a[i].Count < a[j].Count {
-       return true
-    }
-    return false
+func (a byYearCount) Len() int      { return len(a) }
+func (a byYearCount) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a byYearCount) Less(i, j int) bool {
+	if a[i].PickupYear < a[j].PickupYear {
+		return true
+	}
+	if a[i].PickupYear == a[j].PickupYear && a[i].Count < a[j].Count {
+		return true
+	}
+	return false
 }
 
 type predefined4Row struct {
