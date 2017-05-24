@@ -11,6 +11,7 @@ import (
 	"time"
 	"sort"
 	"strconv"
+	"strings"
 
 	_ "./statik"
 	"github.com/gorilla/mux"
@@ -134,13 +135,16 @@ func (s *Server) HandleIntersect(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 
 	bitmaps := make([]*pilosa.PQLBitmapQuery, 0, 5)
+	bitmapHTML := make([]string, 0, 5)
 	for frame, id := range r.URL.Query() {
 		rowID, err := strconv.Atoi(id[0])
 		if id[0] == "" || err != nil {
 			continue
 		}
 		bitmaps = append(bitmaps, s.Frames[frame].Bitmap(uint64(rowID)))
+		bitmapHTML = append(bitmapHTML, fmt.Sprintf("Bitmap(frame=%s, rowID=%d)", frame, rowID))
 	}
+	formattedQuery := fmt.Sprintf("Count(Intersect(<br />&nbsp;&nbsp;%s<br />))", strings.Join(bitmapHTML, ",<br />&nbsp;&nbsp;"))
 
 	if len(bitmaps) < 2 {
 		log.Printf("need 2+ bitmaps for intersect\n")
@@ -154,7 +158,7 @@ func (s *Server) HandleIntersect(w http.ResponseWriter, r *http.Request) {
 	resp := intersectResponse{}
 	resp.NumRides = s.NumRides
 	resp.Seconds = float64(dif.Seconds())
-	resp.Query = ""
+	resp.Query = formattedQuery
 	resp.Rows = []intersectRow{intersectRow{response.Result().Count}}
 
 	enc := json.NewEncoder(w)
@@ -175,6 +179,13 @@ type intersectRow struct {
 	Count   uint64 `json:"count"`
 }
 
+var maxIDMap map[string]uint64 = map[string]uint64{
+	"speed_mph": 100,
+	"duration_minutes": 100,
+	"dist_miles": 40,
+	"total_amount_dollars": 100,
+}
+
 func (s *Server) HandleTopN(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 
@@ -189,9 +200,16 @@ func (s *Server) HandleTopN(w http.ResponseWriter, r *http.Request) {
 	resp.Rows = make([]topnRow, 0, 50)
 	resp.NumRides = s.NumRides
 	resp.Seconds = float64(dif.Seconds())
-	resp.Query = ""
+	resp.Query = fmt.Sprintf("TopN(frame=%s)", frame)
 
+	maxID := maxIDMap[frame]
+	if maxID == 0 {
+		maxID = 1000000
+	}
 	for _, ci := range response.Result().CountItems {
+		if ci.ID > maxID {
+			continue
+		}
 		resp.Rows = append(resp.Rows, topnRow{ci.ID, ci.Count})
 	}
 
