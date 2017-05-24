@@ -59,7 +59,7 @@ func NewServer(pilosaAddr string) (*Server, error) {
 	router.HandleFunc("/predefined/2", server.HandlePredefined2).Methods("GET")
 	router.HandleFunc("/predefined/3", server.HandlePredefined3).Methods("GET")
 	router.HandleFunc("/predefined/4", server.HandlePredefined4).Methods("GET")
-	//router.HandleFunc("/predefined/5", server.HandlePredefined5).Methods("GET")
+	router.HandleFunc("/predefined/5", server.HandlePredefined5).Methods("GET")
 
 	pilosaURI, err := pilosa.NewURIFromAddress(pilosaAddr)
 	if err != nil {
@@ -205,28 +205,45 @@ func (s *Server) HandleTopN(w http.ResponseWriter, r *http.Request) {
 
 	dif := time.Since(start)
 
-	resp := topnResponse{}
-	resp.Rows = make([]topnRow, 0, 50)
-	resp.NumRides = s.NumRides
-	resp.Seconds = float64(dif.Seconds())
-	resp.Query = fmt.Sprintf("TopN(frame=%s)", frame)
-
-	maxID := maxIDMap[frame]
-	if maxID == 0 {
-		maxID = 1000000
-	}
-	for _, ci := range response.Result().CountItems {
-		if ci.ID > maxID {
-			continue
+	if frame == "pickup_grid_id" {
+		resp := predefined5Response{}
+		resp.NumRides = s.NumRides
+		resp.Description = "Pickup Locations"
+		resp.Seconds = float64(dif.Seconds())
+		for _, c := range response.Result().CountItems {
+			x := c.ID % 100
+			y := c.ID / 100
+			resp.Rows = append(resp.Rows, predefined5Row{c.ID, c.Count, x, y})
 		}
-		resp.Rows = append(resp.Rows, topnRow{ci.ID, ci.Count})
+		enc := json.NewEncoder(w)
+		err = enc.Encode(resp)
+		if err != nil {
+			log.Printf("writing results: %v to responsewriter: %v", resp, err)
+		}
+	} else {
+		resp := topnResponse{}
+		resp.Rows = make([]topnRow, 0, 50)
+		resp.NumRides = s.NumRides
+		resp.Seconds = float64(dif.Seconds())
+		resp.Query = fmt.Sprintf("TopN(frame=%s)", frame)
+
+		maxID := maxIDMap[frame]
+		if maxID == 0 {
+			maxID = 1000000
+		}
+		for _, ci := range response.Result().CountItems {
+			if ci.ID > maxID {
+				continue
+			}
+			resp.Rows = append(resp.Rows, topnRow{ci.ID, ci.Count})
+		}
+		enc := json.NewEncoder(w)
+		err = enc.Encode(resp)
+		if err != nil {
+			log.Printf("writing results: %v to responsewriter: %v", resp, err)
+		}
 	}
 
-	enc := json.NewEncoder(w)
-	err = enc.Encode(resp)
-	if err != nil {
-		log.Printf("writing results: %v to responsewriter: %v", resp, err)
-	}
 }
 
 type topnResponse struct {
@@ -557,7 +574,4 @@ type predefined5Row struct {
 	Count        uint64 `json:"count"`
 	X            uint64 `json:"x"`
 	Y            uint64 `json:"y"`
-}
-func HandlePredefined5(w http.ResponseWriter, r *http.Request) {
-	// 2 queries - lowest priority
 }
