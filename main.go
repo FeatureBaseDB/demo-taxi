@@ -516,6 +516,48 @@ func (s *Server) getRideCount() uint64 {
 	return count
 }
 
+func (s *Server) HandlePredefined5(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+
+	q := s.Frames["drop_grid_id"].TopN(0)
+	response, err := s.Client.Query(q, nil)
+	if err != nil {
+		log.Printf("query %v failed with: %v", q, err)
+	}
+
+	resp := predefined5Response{}
+	resp.Seconds = time.Now().Sub(start).Seconds()
+	resp.Description = "Count of pickup locations for top dropoff location"
+	resp.NumRides = s.NumRides
+
+	resp.Rows = make([]predefined5Row, 0, 5)
+	for _, c := range response.Result().CountItems {
+		x := c.ID % 100
+		y := c.ID / 100
+		resp.Rows = append(resp.Rows, predefined5Row{c.ID, c.Count, x, y})
+	}
+	fmt.Printf("%+v\n", resp)
+
+	enc := json.NewEncoder(w)
+	err = enc.Encode(resp)
+	if err != nil {
+		log.Printf("writing results: %v to responsewriter: %v", resp, err)
+	}
+}
+
+type predefined5Response struct {
+	NumRides    uint64           `json:"numProfiles"`
+	Description string           `json:"description"`
+	Seconds     float64          `json:"seconds"`
+	Rows        []predefined5Row `json:"rows"`
+}
+
+type predefined5Row struct {
+	PickupGridID uint64 `json:"pickup_grid_id"`
+	Count        uint64 `json:"count"`
+	X            uint64 `json:"x"`
+	Y            uint64 `json:"y"`
+}
 func HandlePredefined5(w http.ResponseWriter, r *http.Request) {
 	// 2 queries - lowest priority
 }
