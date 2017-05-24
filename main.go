@@ -237,18 +237,22 @@ func (s *Server) HandlePredefined1(w http.ResponseWriter, r *http.Request) {
 	// N queries, N = cardinality of cab_type (3) - lowest priority
 	start := time.Now()
 
-	resp := predefined1Response{}
-	resp.Rows = make([]predefined1Row, 0, 5)
 	q := s.Frames["cab_type"].TopN(5)
 	response, err := s.Client.Query(q, nil)
 	if err != nil {
 		log.Printf("query %v failed with: %v", q, err)
 	}
-	resp.Seconds = time.Now().Sub(start).Seconds()
 
+	resp := predefined1Response{}
+	resp.Seconds = time.Now().Sub(start).Seconds()
+	resp.Description = "Profile count by cab type (Mark #1)"
+	resp.NumRides = s.NumRides
+
+	resp.Rows = make([]predefined1Row, 0, 5)
 	for _, c := range response.Result().CountItems {
 		resp.Rows = append(resp.Rows, predefined1Row{c.ID, c.Count})
 	}
+	fmt.Printf("%+v\n", resp)
 
 	enc := json.NewEncoder(w)
 	err = enc.Encode(resp)
@@ -258,9 +262,10 @@ func (s *Server) HandlePredefined1(w http.ResponseWriter, r *http.Request) {
 }
 
 type predefined1Response struct {
-	Rows        []predefined1Row `json:"Rows"`
+	Rows        []predefined1Row `json:"rows"`
 	Description string           `json:"description"`
 	Seconds     float64          `json:"seconds"`
+	NumRides    uint64           `json:"numProfiles"`
 }
 
 type predefined1Row struct {
@@ -274,13 +279,19 @@ func (s *Server) HandlePredefined2(w http.ResponseWriter, r *http.Request) {
 	var wg = &sync.WaitGroup{}
 	maxpcount := 8
 	resp := predefined2Response{}
-	resp.AvgPerPassengerAmount = make([]float64, maxpcount+1)
+	arr := make([]float64, maxpcount+1)
 	for pcount := 1; pcount <= maxpcount; pcount++ {
 		wg.Add(1)
-		go s.avgCostForPassengerCount(pcount, resp.AvgPerPassengerAmount, wg)
+		go s.avgCostForPassengerCount(pcount, arr, wg)
 	}
 	wg.Wait()
 	resp.Seconds = time.Since(start).Seconds()
+	resp.NumRides = s.NumRides
+	resp.Description = "average(total_amount) by passenger_count (Mark #2)"
+	resp.Rows = make([]predefined2Row, 0, maxpcount)
+	for id, amt := range arr {
+		resp.Rows = append(resp.Rows, predefined2Row{uint64(id), amt})
+	}
 
 	enc := json.NewEncoder(w)
 	err := enc.Encode(resp)
@@ -290,9 +301,15 @@ func (s *Server) HandlePredefined2(w http.ResponseWriter, r *http.Request) {
 }
 
 type predefined2Response struct {
-	AvgPerPassengerAmount []float64 `json:"avgCostPerPassengerCount"`
+	Rows                  []predefined2Row `json:"rows"`
 	Description           string    `json:"description"`
 	Seconds               float64   `json:"seconds"`
+	NumRides              uint64    `json:"numProfiles"`
+}
+
+type predefined2Row struct {
+	PassengerCount uint64  `json:"passengerCount"`
+	AverageAmount  float64 `json:"average(totalAmount)"`
 }
 
 func (s *Server) avgCostForPassengerCount(count int, values []float64, wg *sync.WaitGroup) {
