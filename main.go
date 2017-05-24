@@ -490,10 +490,10 @@ type byYearCount []predefined4Row
 func (a byYearCount) Len() int      { return len(a) }
 func (a byYearCount) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 func (a byYearCount) Less(i, j int) bool {
-	if a[i].PickupYear < a[j].PickupYear {
+	if a[i].PickupYear > a[j].PickupYear {
 		return true
 	}
-	if a[i].PickupYear == a[j].PickupYear && a[i].Count < a[j].Count {
+	if a[i].PickupYear == a[j].PickupYear && a[i].Count > a[j].Count {
 		return true
 	}
 	return false
