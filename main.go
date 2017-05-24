@@ -206,14 +206,14 @@ func (s *Server) HandleTopN(w http.ResponseWriter, r *http.Request) {
 	dif := time.Since(start)
 
 	if frame == "pickup_grid_id" {
-		resp := predefined5Response{}
+		resp := topNGridResponse{}
 		resp.NumRides = s.NumRides
 		resp.Description = "Pickup Locations"
 		resp.Seconds = float64(dif.Seconds())
 		for _, c := range response.Result().CountItems {
 			x := c.ID % 100
 			y := c.ID / 100
-			resp.Rows = append(resp.Rows, predefined5Row{c.ID, c.Count, x, y})
+			resp.Rows = append(resp.Rows, topNGridRow{c.ID, c.Count, x, y})
 		}
 		enc := json.NewEncoder(w)
 		err = enc.Encode(resp)
@@ -244,6 +244,20 @@ func (s *Server) HandleTopN(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+}
+
+type topNGridResponse struct {
+	NumRides    uint64        `json:"numProfiles"`
+	Description string        `json:"description"`
+	Seconds     float64       `json:"seconds"`
+	Rows        []topNGridRow `json:"rows"`
+}
+
+type topNGridRow struct {
+	PickupGridID uint64 `json:"bitmapID"`
+	Count        uint64 `json:"count"`
+	X            uint64 `json:"x"`
+	Y            uint64 `json:"y"`
 }
 
 type topnResponse struct {
