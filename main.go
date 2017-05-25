@@ -22,7 +22,6 @@ import (
 
 const host = ":10101"
 const indexName = "taxi"
-const percentThreshold = 95
 
 func main() {
 	pilosaAddr := pflag.String("pilosa", "localhost:10101", "host:port for pilosa")
@@ -480,7 +479,6 @@ func (s *Server) HandlePredefined4(w http.ResponseWriter, r *http.Request) {
 	resp.NumRides = s.NumRides
 	resp.Description = "Profile count by (year, passenger_count, trip_distance), ordered by (year, count) (Mark #4) (go)"
 	resp.Seconds = float64(dif.Seconds())
-	resp.Threshold = percentThreshold
 
 	err := json.NewEncoder(w).Encode(resp)
 	if err != nil {
@@ -511,7 +509,6 @@ type predefined4Response struct {
 	NumRides    uint64           `json:"numProfiles"`
 	Description string           `json:"description"`
 	Seconds     float64          `json:"seconds"`
-	Threshold   float64          `json:"percentageThreshold"`
 	Rows        []predefined4Row `json:"rows"`
 }
 
