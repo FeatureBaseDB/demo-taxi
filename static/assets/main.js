@@ -192,7 +192,10 @@ function makeQuery() {
             }            
             toUnion.push("Bitmap(frame='" + frame + "',rowID=" + val[i] + ")");
         }
-        if (toUnion.length > 0) {
+        if (toUnion.length == 1) {
+            toIntersect.push(toUnion[0]);
+        }
+        else if (toUnion.length > 1) {
             toIntersect.push("Union(" + toUnion.join(", ") + ")");
         }
         
