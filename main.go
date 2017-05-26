@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"sort"
 	"strconv"
 	"strings"
@@ -59,6 +60,7 @@ func NewServer(pilosaAddr string) (*Server, error) {
 	router.HandleFunc("/predefined/3", server.HandlePredefined3).Methods("GET")
 	router.HandleFunc("/predefined/4", server.HandlePredefined4).Methods("GET")
 	router.HandleFunc("/predefined/5", server.HandlePredefined5).Methods("GET")
+	router.HandleFunc("/query", server.HandleQuery).Methods("GET")
 
 	pilosaURI, err := pilosa.NewURIFromAddress(pilosaAddr)
 	if err != nil {
@@ -592,4 +594,31 @@ type predefined5Row struct {
 	Count        uint64 `json:"count"`
 	X            uint64 `json:"x"`
 	Y            uint64 `json:"y"`
+}
+
+func (s *Server) HandleQuery(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+	q, err := url.QueryUnescape(r.URL.RawQuery)
+	if err != nil {
+		fmt.Fprintf(w, fmt.Sprintf(`{"error": "%s"}`, err))
+		return
+	}
+
+	response, err := s.Client.Query(s.Index.RawQuery(q), nil)
+	if err != nil {
+		fmt.Fprintf(w, fmt.Sprintf(`{"error": "%s"}`, err))
+		return
+	}
+	dif := time.Since(start)
+
+	resp := intersectResponse{}
+	resp.NumRides = s.NumRides
+	resp.Seconds = float64(dif.Seconds())
+	resp.Rows = []intersectRow{intersectRow{response.Result().Count}}
+
+	enc := json.NewEncoder(w)
+	err = enc.Encode(resp)
+	if err != nil {
+		log.Printf("writing results: %v to responsewriter: %v", resp, err)
+	}
 }

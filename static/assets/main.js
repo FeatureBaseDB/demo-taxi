@@ -1,14 +1,16 @@
 $("#intersectForm").bind('submit', function(event) {
     event.preventDefault();
-    data = $('#intersectForm').serialize()
-    doAjax('query/intersect', data, function(data) {
-        console.log(data);
+    var query = makeQuery();
+    if (!query) {
+        return
+    }
+    doAjax('query', query, function(data) {
         if (data.error) {
             $('#intersectResults').hide()
         } else {
             $('#intersectResults').show()
         }
-        $("#intersect-result-query").html(data['query']);
+        $("#intersect-result-query").html(query);
         $("#intersect-result-latency").text(data['seconds'].toString().substring(0,5) + ' sec');
         $("#intersect-result-count").text(addCommas(data['rows'][0].count) + ' rides');
         $("#intersect-result-total").text(addCommas(data['numProfiles']) + ' total rides');
@@ -162,4 +164,41 @@ function addCommas(intNum) {
 }
 
 function startup() {
+}
+
+var frameToID = {
+    cab_type: "cabType",
+    pickup_year: "pickupYear",
+    dist_miles: "distance",
+    duration_minutes: "duration_minutes",
+    speed_mph: "speed_mph",
+    passenger_count: "passengerCount",
+    total_amount_dollars: "totalAmount_dollars"
+}
+
+function makeQuery() {
+    var toIntersect = [];
+
+    for (var frame in frameToID) {
+        $el = $("#" + frameToID[frame]);
+        var val = $el.val();
+        if (!val) {
+            continue;
+        }
+        var toUnion = [];
+        for (var i = 0; i < val.length; i++) {
+            if (!val[i]) {
+                continue;
+            }            
+            toUnion.push("Bitmap(frame='" + frame + "',rowID=" + val[i] + ")");
+        }
+        if (toUnion.length > 0) {
+            toIntersect.push("Union(" + toUnion.join(", ") + ")");
+        }
+        
+    }
+    if (toIntersect.length > 0) {
+        return "Count(Intersect(" + toIntersect.join(", ") + "))";
+    }
+    return "";
 }
