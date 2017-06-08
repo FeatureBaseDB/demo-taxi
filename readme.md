@@ -13,4 +13,4 @@ see https://github.com/jaffee/pdk/tree/taxi-import
 
 `go generate && go run main.go`
 
-Then open http://127.0.0.1:5000 and try out some queries!
+Then open http://127.0.0.1:8000 and try out some queries!
