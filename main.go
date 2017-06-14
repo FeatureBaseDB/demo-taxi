@@ -7,9 +7,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"sort"
-	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -52,13 +51,13 @@ func NewServer(pilosaAddr string) (*Server, error) {
 	router := mux.NewRouter()
 	router.HandleFunc("/", server.HandleStatic).Methods("GET")
 	router.HandleFunc("/assets/{file}", server.HandleStatic).Methods("GET")
-	router.HandleFunc("/query/intersect", server.HandleIntersect).Methods("GET")
 	router.HandleFunc("/query/topn", server.HandleTopN).Methods("GET")
 	router.HandleFunc("/predefined/1", server.HandlePredefined1).Methods("GET")
 	router.HandleFunc("/predefined/2", server.HandlePredefined2).Methods("GET")
 	router.HandleFunc("/predefined/3", server.HandlePredefined3).Methods("GET")
 	router.HandleFunc("/predefined/4", server.HandlePredefined4).Methods("GET")
 	router.HandleFunc("/predefined/5", server.HandlePredefined5).Methods("GET")
+	router.HandleFunc("/query", server.HandleQuery).Methods("GET")
 
 	pilosaURI, err := pilosa.NewURIFromAddress(pilosaAddr)
 	if err != nil {
@@ -130,55 +129,8 @@ func (s *Server) HandleStatic(w http.ResponseWriter, r *http.Request) {
 	http.FileServer(statikFS).ServeHTTP(w, r)
 }
 
-func (s *Server) HandleIntersect(w http.ResponseWriter, r *http.Request) {
-	start := time.Now()
-
-	bitmaps := make([]*pilosa.PQLBitmapQuery, 0, 5)
-	bitmapHTML := make([]string, 0, 5)
-	for frame, id := range r.URL.Query() {
-		if id[0] == "Green" {
-			id[0] = "0"
-		} else if id[0] == "Yellow" {
-			id[0] = "1"
-		}
-		rowID, err := strconv.Atoi(id[0])
-		if id[0] == "" || err != nil {
-			continue
-		}
-		bitmaps = append(bitmaps, s.Frames[frame].Bitmap(uint64(rowID)))
-		bitmapHTML = append(bitmapHTML, fmt.Sprintf("Bitmap(frame=%s, rowID=%d)", frame, rowID))
-	}
-	formattedQuery := fmt.Sprintf("Count(Intersect(<br />&nbsp;&nbsp;%s<br />))", strings.Join(bitmapHTML, ",<br />&nbsp;&nbsp;"))
-
-	var q pilosa.PQLQuery
-	if len(bitmaps) == 0 {
-		log.Printf("need at least one bitmap for intersect\n")
-		return
-	} else if len(bitmaps) == 1 {
-		q = s.Index.Count(bitmaps[0])
-	} else {
-		q = s.Index.Count(s.Index.Intersect(bitmaps[0], bitmaps[1], bitmaps[2:]...))
-	}
-	response, err := s.Client.Query(q, nil)
-
-	dif := time.Since(start)
-
-	resp := intersectResponse{}
-	resp.NumRides = s.NumRides
-	resp.Seconds = float64(dif.Seconds())
-	resp.Query = formattedQuery
-	resp.Rows = []intersectRow{intersectRow{response.Result().Count}}
-
-	enc := json.NewEncoder(w)
-	err = enc.Encode(resp)
-	if err != nil {
-		log.Printf("writing results: %v to responsewriter: %v", resp, err)
-	}
-}
-
 type intersectResponse struct {
 	Rows     []intersectRow `json:"rows"`
-	Query    string         `json:"query"`
 	Seconds  float64        `json:"seconds"`
 	NumRides uint64         `json:"numProfiles"`
 }
@@ -592,4 +544,31 @@ type predefined5Row struct {
 	Count        uint64 `json:"count"`
 	X            uint64 `json:"x"`
 	Y            uint64 `json:"y"`
+}
+
+func (s *Server) HandleQuery(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+	q, err := url.QueryUnescape(r.URL.RawQuery)
+	if err != nil {
+		fmt.Fprintf(w, fmt.Sprintf(`{"error": "%s"}`, err))
+		return
+	}
+
+	response, err := s.Client.Query(s.Index.RawQuery(q), nil)
+	if err != nil {
+		fmt.Fprintf(w, fmt.Sprintf(`{"error": "%s"}`, err))
+		return
+	}
+	dif := time.Since(start)
+
+	resp := intersectResponse{}
+	resp.NumRides = s.NumRides
+	resp.Seconds = float64(dif.Seconds())
+	resp.Rows = []intersectRow{intersectRow{response.Result().Count}}
+
+	enc := json.NewEncoder(w)
+	err = enc.Encode(resp)
+	if err != nil {
+		log.Printf("writing results: %v to responsewriter: %v", resp, err)
+	}
 }
