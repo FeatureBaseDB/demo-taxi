@@ -113,7 +113,7 @@ func (s *Server) testQuery() error {
 }
 
 func (s *Server) Serve() {
-	fmt.Println("running at localhost:8000")
+	fmt.Println("running at http://127.0.0.1:8000")
 	log.Fatal(http.ListenAndServe(":8000", s.Router))
 }
 
