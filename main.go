@@ -302,7 +302,7 @@ type predefined2Row struct {
 	AverageAmount  float64 `json:"average(totalAmount)"`
 }
 
-func (s *Server) avgCostForPassengerCount(count int, values []float64, wg *sync.WaitGroup) {
+func (s *Server) avgCostForPassengerCount(pcount int, values []float64, wg *sync.WaitGroup) {
 	defer wg.Done()
 	// TopN(frame=total_amount_dollars, Bitmap(frame=passenger_count, rowID=pcount))
 	// for each $ amount, add amnt*num_rides to total amount and add num_rides to total rides.
@@ -315,11 +315,11 @@ func (s *Server) avgCostForPassengerCount(count int, values []float64, wg *sync.
 	if !ok {
 		log.Println("passenger_count frame doesn't exist")
 	}
-	pcBitmap := pcFrame.Bitmap(uint64(count))
+	pcBitmap := pcFrame.Bitmap(uint64(pcount))
 	query := tadFrame.BitmapTopN(1000, pcBitmap)
 	qtime := time.Now()
 	results, err := s.Client.Query(query, nil)
-	log.Printf("query time for passenger count: %v is %v", count, time.Since(qtime).Seconds())
+	log.Printf("query time for passenger count: %v is %v", pcount, time.Since(qtime).Seconds())
 	if err != nil {
 		log.Printf("query %v failed with: %v", query, err)
 		return
@@ -330,7 +330,7 @@ func (s *Server) avgCostForPassengerCount(count int, values []float64, wg *sync.
 		num_rides += cri.Count
 		total_amount += cri.ID * cri.Count
 	}
-	values[count] = float64(total_amount) / float64(num_rides)
+	values[pcount] = float64(total_amount) / float64(num_rides)
 }
 
 func (s *Server) HandlePredefined3(w http.ResponseWriter, r *http.Request) {
