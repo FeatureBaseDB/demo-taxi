@@ -326,6 +326,11 @@ func (s *Server) avgCostForPassengerCount(pcount int, values []float64, wg *sync
 	}
 	var num_rides uint64 = 0
 	var total_amount uint64 = 0
+	if len(results.Results()[0].CountItems) == 0 {
+		// prevent NaN
+		values[pcount] = 0
+		return
+	}
 	for _, cri := range results.Results()[0].CountItems {
 		num_rides += cri.Count
 		total_amount += cri.ID * cri.Count
