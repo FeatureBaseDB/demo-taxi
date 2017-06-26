@@ -9,14 +9,8 @@ see https://github.com/jaffee/pdk/tree/taxi-import
 
 `cd demo-taxi`
 
-`virtualenv ~/venvs/demo-taxi  # or whatever`
+`glide install && go install github.com/rakyll/statik`
 
-`source ~/venvs/demo-taxi/bin/activate`
+`go generate && go run main.go`
 
-`pip install -r requirements.txt`
-
-update `demo.cfg` (see `example.cfg`)
-
-`python run.py & open http://127.0.0.1:5000`
-
-# click things
+Then open http://127.0.0.1:8000 and try out some queries!
