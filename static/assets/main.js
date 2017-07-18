@@ -174,6 +174,8 @@ var frames = {
     speed_mph: 0,
     passenger_count: 0,
     total_amount_dollars: 0,
+    weather_condition: 0,
+    temp_f: 0,
 }
 
 function makeQuery() {
