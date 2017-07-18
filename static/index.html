@@ -33,20 +33,32 @@
 						<form id="intersectForm" action=".">
 
 							<div class="form-group row">
-								<label for="cab_type" class="col-sm-2 col-form-label">Cab type</label>
-								<div class="col-sm-10">
-									<select name="cab_type" form="intersectForm" class="form-control" id="cab_type" onchange="$(this.form).trigger('submit')" multiple="multiple">
+								<div class="col-sm-2">
+									<label for="cab_type" class="col-form-label">Cab type</label>
+									<select name="cab_type" form="intersectForm" class="intersect-frame form-control" id="cab_type" onchange="$(this.form).trigger('submit')" multiple="multiple">
 										<option></option>
 										<option value="0">Green</option>
 										<option value="1">Yellow</option>
 									</select>
 								</div>
-							</div>
-
-							<div class="form-group row">
-								<label for="pickup_year" class="col-sm-2 col-form-label">Year</label>
-								<div class="col-sm-10">
-									<select name="pickup_year" form="intersectForm" class="form-control" id="pickup_year" onchange="$(this.form).trigger('submit')" multiple="multiple">
+								<div class="col-sm-2">
+									<label for="passenger_count" class="col-form-label">Passenger count</label>
+									<select name="passenger_count" form="intersectForm" class="intersect-frame form-control" id="passenger_count" onchange="$(this.form).trigger('submit')" multiple="multiple">
+										<option></option>
+										<option>0</option>
+										<option>1</option>
+										<option>2</option>
+										<option>3</option>
+										<option>4</option>
+										<option>5</option>
+										<option>6</option>
+										<option>7</option>
+										<option>8</option>
+									</select>
+								</div>
+								<div class="col-sm-2">
+									<label for="pickup_year" class="col-form-label">Year</label>
+									<select name="pickup_year" form="intersectForm" class="intersect-frame form-control" id="pickup_year" onchange="$(this.form).trigger('submit')" multiple="multiple">
 										<option></option>
 										<option>2009</option>
 										<option>2010</option>
@@ -57,12 +69,97 @@
 										<option>2015</option>
 									</select>
 								</div>
+								<div class="col-sm-2">
+									<label for="pickup_month" class="col-form-label">Month</label>
+									<select name="pickup_month" form="intersectForm" class="intersect-frame form-control" id="pickup_month" onchange="$(this.form).trigger('submit')" multiple="multiple">
+										<option></option>
+										<option value=0>January</option>
+										<option value=1>February</option>
+										<option value=2>March</option>
+										<option value=3>April</option>
+										<option value=4>May</option>
+										<option value=5>June</option>
+										<option value=6>July</option>
+										<option value=7>August</option>
+										<option value=8>September</option>
+										<option value=9>October</option>
+										<option value=10>November</option>
+										<option value=11>December</option>
+									</select>
+								</div>
+								<div class="col-sm-2">
+									<label for="pickup_day" class="col-form-label">Day of week</label>
+									<select name="pickup_day" form="intersectForm" class="intersect-frame form-control" id="pickup_day" onchange="$(this.form).trigger('submit')" multiple="multiple">
+										<option></option>
+										<option value=0>Monday</option>
+										<option value=1>Tuesday</option>
+										<option value=2>Wednesday</option>
+										<option value=3>Thursday</option>
+										<option value=4>Friday</option>
+										<option value=5>Saturday</option>
+										<option value=6>Sunday</option>
+									</select>
+								</div>
+								<div class="col-sm-2">
+									<label for="pickup_time" class="col-form-label">Time (30-min)</label>
+									<select name="pickup_time" form="intersectForm" class="intersect-frame form-control" id="pickup_time" onchange="$(this.form).trigger('submit')" multiple="multiple">
+										<option></option>
+										<option>0</option>
+										<option>1</option>
+										<option>2</option>
+										<option>3</option>
+										<option>4</option>
+										<option>5</option>
+										<option>6</option>
+										<option>7</option>
+										<option>8</option>
+										<option>9</option>
+										<option>10</option>
+										<option>11</option>
+										<option>12</option>
+										<option>13</option>
+										<option>14</option>
+										<option>15</option>
+										<option>16</option>
+										<option>17</option>
+										<option>18</option>
+										<option>19</option>
+										<option>20</option>
+										<option>21</option>
+										<option>22</option>
+										<option>23</option>
+										<option>24</option>
+										<option>25</option>
+										<option>26</option>
+										<option>27</option>
+										<option>28</option>
+										<option>29</option>
+										<option>30</option>
+										<option>31</option>
+										<option>32</option>
+										<option>33</option>
+										<option>34</option>
+										<option>35</option>
+										<option>36</option>
+										<option>37</option>
+										<option>38</option>
+										<option>39</option>
+										<option>40</option>
+										<option>41</option>
+										<option>42</option>
+										<option>43</option>
+										<option>44</option>
+										<option>45</option>
+										<option>46</option>
+										<option>47</option>
+									</select>
+								</div>
 							</div>
-				
+
 							<div class="form-group row">
-								<label for="dist_miles" class="col-sm-2 col-form-label">Distance</label>
-								<div class="col-sm-10">
-									<select name="dist_miles" form="intersectForm" class="form-control" id="dist_miles" onchange="$(this.form).trigger('submit')" multiple="multiple">
+								<div class="col-sm-2">
+									<label for="dist_miles" class="col-form-label">Distance</label>
+									<select name="dist_miles" form="intersectForm" class="intersect-frame form-control" id="dist_miles" onchange="$(this.form).trigger('submit')" multiple="multiple">
 										<option></option>
 										<option value=0><.5 mi</option>
 										<option value=1>1 mi</option>
@@ -80,12 +177,9 @@
 										<option value=25>25 mi</option>
 									</select>
 								</div>
-							</div>
-
-							<div class="form-group row">
-								<label for="duration_minutes" class="col-sm-2 col-form-label">Duration</label>
-								<div class="col-sm-10">
-									<select name="duration_minutes" form="intersectForm" class="form-control" id="duration_minutes" onchange="$(this.form).trigger('submit')" multiple="multiple">
+								<div class="col-sm-2">
+									<label for="duration_minutes" class="col-form-label">Duration</label>
+									<select name="duration_minutes" form="intersectForm" class="intersect-frame form-control" id="duration_minutes" onchange="$(this.form).trigger('submit')" multiple="multiple">
 										<option></option>
 										<option value=0>0 min</option>
 										<option value=1>1 min</option>
@@ -103,12 +197,9 @@
 										<option value=60>1 hr</option>
 									</select>
 								</div>
-							</div>
-
-							<div class="form-group row">
-								<label for="speed_mph" class="col-sm-2 col-form-label">Speed</label>
-								<div class="col-sm-10">
-									<select name="speed_mph" form="intersectForm" class="form-control" id="speed_mph" onchange="$(this.form).trigger('submit')" multiple="multiple">
+								<div class="col-sm-2">
+									<label for="speed_mph" class="col-form-label">Speed</label>
+									<select name="speed_mph" form="intersectForm" class="intersect-frame form-control" id="speed_mph" onchange="$(this.form).trigger('submit')" multiple="multiple">
 										<option></option>
 										<option value=0><.5 mph</option>
 										<option value=1>1 mph</option>
@@ -126,30 +217,9 @@
 										<option value=25>25 mph</option>
 									</select>
 								</div>
-							</div>
-
-							<div class="form-group row">
-								<label for="passenger_count" class="col-sm-2 col-form-label">Passenger count</label>
-								<div class="col-sm-10">
-									<select name="passenger_count" form="intersectForm" class="form-control" id="passenger_count" onchange="$(this.form).trigger('submit')" multiple="multiple">
-										<option></option>
-										<option>0</option>
-										<option>1</option>
-										<option>2</option>
-										<option>3</option>
-										<option>4</option>
-										<option>5</option>
-										<option>6</option>
-										<option>7</option>
-										<option>8</option>
-									</select>
-								</div>
-							</div>
-
-							<div class="form-group row">
-								<label for="totalAmount" class="col-sm-2 col-form-label">Total fare</label>
-								<div class="col-sm-10">
-									<select name="total_amount_dollars" form="intersectForm" class="form-control" id="total_amount_dollars" onchange="$(this.form).trigger('submit')" multiple="multiple">
+								<div class="col-sm-2">
+									<label for="totalAmount" class="col-form-label">Total fare</label>
+									<select name="total_amount_dollars" form="intersectForm" class="intersect-frame form-control" id="total_amount_dollars" onchange="$(this.form).trigger('submit')" multiple="multiple">
 										<option></option>
 										<option value=0>$0</option>
 										<option value=1>$1</option>
@@ -167,9 +237,9 @@
 							</div>
 
 							<div class="form-group row">
-								<label for="weather_condition" class="col-sm-2 col-form-label">Weather Condition</label>
-								<div class="col-sm-10">
-									<select name="weather_condition" form="intersectForm" class="form-control" id="weather_condition" onchange="$(this.form).trigger('submit')" multiple="multiple">
+								<div class="col-sm-2">
+									<label for="weather_condition" class="col-form-label">Condition</label>
+									<select name="weather_condition" form="intersectForm" class="intersect-frame form-control" id="weather_condition" onchange="$(this.form).trigger('submit')" multiple="multiple">
 										<option></option>
 										<option value=0>Unknown</option>
 										<option value=1>Clear</option>
@@ -195,12 +265,9 @@
 
 									</select>
 								</div>
-							</div>
-
-							<div class="form-group row">
-								<label for="temp_f" class="col-sm-2 col-form-label">Temperature (°F)</label>
-								<div class="col-sm-10">
-									<select name="temp_f" form="intersectForm" class="form-control" id="temp_f" onchange="$(this.form).trigger('submit')" multiple="multiple">
+								<div class="col-sm-2">
+									<label for="temp_f" class="col-form-label">Temperature (°F)</label>
+									<select name="temp_f" form="intersectForm" class="intersect-frame form-control" id="temp_f" onchange="$(this.form).trigger('submit')" multiple="multiple">
 										<option></option>
 										<option value=0>0</option>
 										<option value=1>1</option>

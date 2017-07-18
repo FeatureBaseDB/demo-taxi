@@ -73,7 +73,34 @@ func NewServer(pilosaAddr string) (*Server, error) {
 		return nil, fmt.Errorf("client.EnsureIndex: %v", err)
 	}
 
-	frames := []string{"cab_type", "passenger_count", "total_amount_dollars", "pickup_time", "pickup_day", "pickup_month", "pickup_year", "drop_time", "drop_day", "drop_month", "drop_year", "dist_miles", "duration_minutes", "speed_mph", "pickup_grid_id", "drop_grid_id"}
+	// TODO should be automatic
+	frames := []string{
+		"cab_type",
+		"passenger_count",
+		"total_amount_dollars",
+		"pickup_time",
+		"pickup_day",
+		"pickup_mday",
+		"pickup_month",
+		"pickup_year",
+		"drop_time",
+		"drop_day",
+		"drop_mday",
+		"drop_month",
+		"drop_year",
+		"dist_miles",
+		"duration_minutes",
+		"speed_mph",
+		"pickup_grid_id",
+		"drop_grid_id",
+		"weather_condition",
+		// "precipitation_type",
+		"precipitation_inches",
+		"temp_f",
+		"pressure_i",
+		"humidity",
+		"elevation",
+	}
 
 	for _, frameName := range frames {
 		frame, err := index.Frame(frameName, nil)

@@ -169,6 +169,9 @@ function startup() {
 var frames = {
     cab_type: 0,
     pickup_year: 0,
+    pickup_month: 0,
+    pickup_day: 0,
+    pickup_time: 0,
     dist_miles: 0,
     duration_minutes: 0,
     speed_mph: 0,
