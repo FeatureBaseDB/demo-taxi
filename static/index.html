@@ -33,9 +33,9 @@
 						<form id="intersectForm" action=".">
 
 							<div class="form-group row">
-								<label for="cabType" class="col-sm-2 col-form-label">Cab type</label>
+								<label for="cab_type" class="col-sm-2 col-form-label">Cab type</label>
 								<div class="col-sm-10">
-									<select name="cab_type" form="intersectForm" class="form-control" id="cabType" onchange="$(this.form).trigger('submit')" multiple="multiple">
+									<select name="cab_type" form="intersectForm" class="form-control" id="cab_type" onchange="$(this.form).trigger('submit')" multiple="multiple">
 										<option></option>
 										<option value="0">Green</option>
 										<option value="1">Yellow</option>
@@ -44,9 +44,9 @@
 							</div>
 
 							<div class="form-group row">
-								<label for="year" class="col-sm-2 col-form-label">Year</label>
+								<label for="pickup_year" class="col-sm-2 col-form-label">Year</label>
 								<div class="col-sm-10">
-									<select name="pickup_year" form="intersectForm" class="form-control" id="pickupYear" onchange="$(this.form).trigger('submit')" multiple="multiple">
+									<select name="pickup_year" form="intersectForm" class="form-control" id="pickup_year" onchange="$(this.form).trigger('submit')" multiple="multiple">
 										<option></option>
 										<option>2009</option>
 										<option>2010</option>
@@ -60,9 +60,9 @@
 							</div>
 				
 							<div class="form-group row">
-								<label for="distance" class="col-sm-2 col-form-label">Distance</label>
+								<label for="dist_miles" class="col-sm-2 col-form-label">Distance</label>
 								<div class="col-sm-10">
-									<select name="dist_miles" form="intersectForm" class="form-control" id="distance" onchange="$(this.form).trigger('submit')" multiple="multiple">
+									<select name="dist_miles" form="intersectForm" class="form-control" id="dist_miles" onchange="$(this.form).trigger('submit')" multiple="multiple">
 										<option></option>
 										<option value=0><.5 mi</option>
 										<option value=1>1 mi</option>
@@ -83,7 +83,7 @@
 							</div>
 
 							<div class="form-group row">
-								<label for="duration" class="col-sm-2 col-form-label">Duration</label>
+								<label for="duration_minutes" class="col-sm-2 col-form-label">Duration</label>
 								<div class="col-sm-10">
 									<select name="duration_minutes" form="intersectForm" class="form-control" id="duration_minutes" onchange="$(this.form).trigger('submit')" multiple="multiple">
 										<option></option>
@@ -106,7 +106,7 @@
 							</div>
 
 							<div class="form-group row">
-								<label for="speed" class="col-sm-2 col-form-label">Speed</label>
+								<label for="speed_mph" class="col-sm-2 col-form-label">Speed</label>
 								<div class="col-sm-10">
 									<select name="speed_mph" form="intersectForm" class="form-control" id="speed_mph" onchange="$(this.form).trigger('submit')" multiple="multiple">
 										<option></option>
@@ -129,9 +129,9 @@
 							</div>
 
 							<div class="form-group row">
-								<label for="passengerCount" class="col-sm-2 col-form-label">Passenger count</label>
+								<label for="passenger_count" class="col-sm-2 col-form-label">Passenger count</label>
 								<div class="col-sm-10">
-									<select name="passenger_count" form="intersectForm" class="form-control" id="passengerCount" onchange="$(this.form).trigger('submit')" multiple="multiple">
+									<select name="passenger_count" form="intersectForm" class="form-control" id="passenger_count" onchange="$(this.form).trigger('submit')" multiple="multiple">
 										<option></option>
 										<option>0</option>
 										<option>1</option>
@@ -149,7 +149,7 @@
 							<div class="form-group row">
 								<label for="totalAmount" class="col-sm-2 col-form-label">Total fare</label>
 								<div class="col-sm-10">
-									<select name="total_amount_dollars" form="intersectForm" class="form-control" id="totalAmount_dollars" onchange="$(this.form).trigger('submit')" multiple="multiple">
+									<select name="total_amount_dollars" form="intersectForm" class="form-control" id="total_amount_dollars" onchange="$(this.form).trigger('submit')" multiple="multiple">
 										<option></option>
 										<option value=0>$0</option>
 										<option value=1>$1</option>

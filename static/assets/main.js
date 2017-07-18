@@ -166,21 +166,21 @@ function addCommas(intNum) {
 function startup() {
 }
 
-var frameToID = {
-    cab_type: "cabType",
-    pickup_year: "pickupYear",
-    dist_miles: "distance",
-    duration_minutes: "duration_minutes",
-    speed_mph: "speed_mph",
-    passenger_count: "passengerCount",
-    total_amount_dollars: "totalAmount_dollars"
+var frames = {
+    cab_type: 0,
+    pickup_year: 0,
+    dist_miles: 0,
+    duration_minutes: 0,
+    speed_mph: 0,
+    passenger_count: 0,
+    total_amount_dollars: 0,
 }
 
 function makeQuery() {
     var toIntersect = [];
 
-    for (var frame in frameToID) {
-        $el = $("#" + frameToID[frame]);
+    for (var frame in frames) {
+        $el = $("#" + frame);
         var val = $el.val();
         if (!val) {
             continue;
