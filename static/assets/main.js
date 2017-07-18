@@ -179,6 +179,11 @@ var frames = {
     total_amount_dollars: 0,
     weather_condition: 0,
     temp_f: 0,
+    precipitation_inches: 0,
+    // precipitation_type: 0,
+    pressure_i: 0,
+    humidity: 0,
+    elevation: 0,
 }
 
 function makeIntersectQuery() {
