@@ -92,6 +92,7 @@ a {
 
 .result-query {
     font-family: inconsolata, monospace;
+    white-space: pre;
     font-weight: bold;
     background-color: #fafafa;
     border-color: #e4eff4;

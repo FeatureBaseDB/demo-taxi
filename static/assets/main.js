@@ -1,6 +1,6 @@
 $("#intersectForm").bind('submit', function(event) {
     event.preventDefault();
-    var query = makeQuery();
+    var query = makeIntersectQuery();
     if (!query) {
         return
     }
@@ -181,12 +181,13 @@ var frames = {
     temp_f: 0,
 }
 
-function makeQuery() {
+function makeIntersectQuery() {
+    indent = "  "
     var toIntersect = [];
-
+    var frame_els = $(".intersect-frame")  // TODO should be able to use this instead of frames dict
     for (var frame in frames) {
-        $el = $("#" + frame);
-        var val = $el.val();
+        el = $("#" + frame);
+        var val = el.val();
         if (!val) {
             continue;
         }
@@ -195,18 +196,18 @@ function makeQuery() {
             if (!val[i]) {
                 continue;
             }            
-            toUnion.push("Bitmap(frame='" + frame + "',rowID=" + val[i] + ")");
+            toUnion.push(indent + "Bitmap(frame='" + frame + "',rowID=" + val[i] + ")");
         }
         if (toUnion.length == 1) {
             toIntersect.push(toUnion[0]);
         }
         else if (toUnion.length > 1) {
-            toIntersect.push("Union(" + toUnion.join(", ") + ")");
+            toIntersect.push(indent + "Union(\n" + indent+ toUnion.join(",\n" + indent) + "\n" + indent + ")");
         }
         
     }
     if (toIntersect.length > 0) {
-        return "Count(Intersect(" + toIntersect.join(", ") + "))";
+        return "Count(Intersect(\n" + toIntersect.join(", \n") + "\n))";
     }
     return "";
 }
