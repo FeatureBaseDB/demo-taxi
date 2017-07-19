@@ -411,39 +411,51 @@
 
 									<div class="form-group row">
 										<div class="col-sm-4">
-											<label for="pickup_elevation" class="col-form-label">Pickup Elevation (5ft)</label>
+											<label for="pickup_elevation" class="col-form-label">Pickup Elevation (ft)</label>
 											<select name="pickup_elevation" form="intersectForm" class="intersect-frame form-control" id="pickup_elevation" onchange="$(this.form).trigger('submit')" multiple="multiple">
 												<option></option>
-												<option value=0>0</option>
-												<option value=1>1</option>
-												<option value=2>2</option>
-												<option value=3>3</option>
-												<option value=4>4</option>
-												<option value=5>5</option>
-												<option value=10>10</option>
-												<option value=15>15</option>
-												<option value=20>20</option>
-												<option value=25>25</option>
-												<option value=30>30</option>
-												<option value=40>40</option>
+												<option value=0>-30</option>
+												<option value=4>-10</option>
+												<option value=6>0</option>
+												<option value=8>10</option>
+												<option value=9>15</option>
+												<option value=10>20</option>
+												<option value=11>25</option>
+												<option value=12>30</option>
+												<option value=14>40</option>
+												<option value=16>50</option>
+												<option value=18>60</option>
+												<option value=20>70</option>
+												<option value=22>80</option>
+												<option value=26>100</option>
+												<option value=30>120</option>
+												<option value=34>140</option>
+												<option value=38>160</option>
+												<option value=42>180</option>
 											</select>
 										</div>
 										<div class="col-sm-4">
 											<label for="drop_elevation" class="col-form-label">Dropoff Elevation (5ft)</label>
 											<select name="drop_elevation" form="intersectForm" class="intersect-frame form-control" id="drop_elevation" onchange="$(this.form).trigger('submit')" multiple="multiple">
 												<option></option>
-												<option value=0>0</option>
-												<option value=1>1</option>
-												<option value=2>2</option>
-												<option value=3>3</option>
-												<option value=4>4</option>
-												<option value=5>5</option>
-												<option value=10>10</option>
-												<option value=15>15</option>
-												<option value=20>20</option>
-												<option value=25>25</option>
-												<option value=30>30</option>
-												<option value=40>40</option>
+												<option value=0>-30</option>
+												<option value=4>-10</option>
+												<option value=6>0</option>
+												<option value=8>10</option>
+												<option value=9>15</option>
+												<option value=10>20</option>
+												<option value=11>25</option>
+												<option value=12>30</option>
+												<option value=14>40</option>
+												<option value=16>50</option>
+												<option value=18>60</option>
+												<option value=20>70</option>
+												<option value=22>80</option>
+												<option value=26>100</option>
+												<option value=30>120</option>
+												<option value=34>140</option>
+												<option value=38>160</option>
+												<option value=42>180</option>
 											</select>
 										</div>
 										<div class="col-sm-4">
@@ -478,15 +490,14 @@
 										<option value="passenger_count">Passenger Count</option>
 										<option value="total_amount_dollars">Total Fare (dollars)</option>
 										<option value="pickup_grid_id">Pickup Grid</option>
-										<option disabled="disabled">----</option>
 										<option value="weather_condition">Weather Condition</option>
 										<option value="precipitation_inches">Precipitation (inches)</option>
 										<option value="temp_f">Temperature (°F)</option>
 										<option value="pressure_i">Pressure (inHg)</option>
 										<option value="humidity">Humidity</option>
 										<option disabled="disabled">----</option>
-										<option value="pickup_elevation">Pickup Elevation (5-foot)</option>
-										<option value="drop_elevation">Dropoff Elevation (5-foot)</option>
+										<option value="pickup_elevation">Pickup Elevation (ft)</option>
+										<option value="drop_elevation">Dropoff Elevation (ft)</option>
 									</select>
 								</div>
 							</div>

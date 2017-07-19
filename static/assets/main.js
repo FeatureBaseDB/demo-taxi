@@ -2,13 +2,16 @@ $("#intersectForm").bind('submit', function(event) {
     event.preventDefault();
     var query = makeIntersectQuery();
     if (!query) {
+        console.log("No query.");
         return
     }
+    console.log("Q", query);
     doAjax('query', query, function(data) {
         if (data.error) {
-            $('#intersectResults').hide()
+            console.log("QError", data.error);
+            $('#intersectResults').hide();
         } else {
-            $('#intersectResults').show()
+            $('#intersectResults').show();
         }
         $("#intersect-result-query").html(query);
         $("#intersect-result-latency").text(data['seconds'].toString().substring(0,5) + ' sec');
