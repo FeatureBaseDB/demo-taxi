@@ -19,6 +19,10 @@ body {
   font: 10px sans-serif;
 }
 
+#version-info {
+  display: none;
+}
+
 .label {
   font-weight: bold;
 }
