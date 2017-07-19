@@ -107,18 +107,18 @@
 											<label for="pickup_month" class="col-form-label">Month</label>
 											<select name="pickup_month" form="intersectForm" class="intersect-frame form-control" id="pickup_month" onchange="$(this.form).trigger('submit')" multiple="multiple">
 												<option></option>
-												<option value=0>January</option>
-												<option value=1>February</option>
-												<option value=2>March</option>
-												<option value=3>April</option>
-												<option value=4>May</option>
-												<option value=5>June</option>
-												<option value=6>July</option>
-												<option value=7>August</option>
-												<option value=8>September</option>
-												<option value=9>October</option>
-												<option value=10>November</option>
-												<option value=11>December</option>
+												<option value=1>January</option>
+												<option value=2>February</option>
+												<option value=3>March</option>
+												<option value=4>April</option>
+												<option value=5>May</option>
+												<option value=6>June</option>
+												<option value=7>July</option>
+												<option value=8>August</option>
+												<option value=9>September</option>
+												<option value=10>October</option>
+												<option value=11>November</option>
+												<option value=12>December</option>
 											</select>
 										</div>
 										<div class="col-sm-4">
@@ -403,26 +403,27 @@
 
 									<div class="form-group row">
 										<div class="col-sm-4">
-											<label for="elevation" class="col-form-label">Elevation (m)</label>
-											<select name="elevation" form="intersectForm" class="intersect-frame form-control" id="elevation" onchange="$(this.form).trigger('submit')" multiple="multiple">
+											<label for="pickup_elevation" class="col-form-label">Pickup Elevation (ft)</label>
+											<select name="pickup_elevation" form="intersectForm" class="intersect-frame form-control" id="pickup_elevation" onchange="$(this.form).trigger('submit')" multiple="multiple">
 												<option></option>
-												<option value=0>0</option>
-												<option value=1>1</option>
-												<option value=2>2</option>
-												<option value=3>3</option>
-												<option value=4>4</option>
-												<option value=5>5</option>
-												<option value=10>10</option>
-												<option value=15>15</option>
-												<option value=20>20</option>
-												<option value=25>25</option>
-												<option value=30>30</option>
-												<option value=40>40</option>
-												<option value=50>50</option>
-												<option value=60>60</option>
-												<option value=70>70</option>
-												<option value=80>80</option>
-												<option value=90>90</option>
+												<option value=0>-30</option>
+												<option value=4>-10</option>
+												<option value=6>0</option>
+												<option value=8>10</option>
+												<option value=9>15</option>
+												<option value=10>20</option>
+												<option value=11>25</option>
+												<option value=12>30</option>
+												<option value=14>40</option>
+												<option value=16>50</option>
+												<option value=18>60</option>
+												<option value=20>70</option>
+												<option value=22>80</option>
+												<option value=26>100</option>
+												<option value=30>120</option>
+												<option value=34>140</option>
+												<option value=38>160</option>
+												<option value=42>180</option>
 											</select>
 										</div>
 									</div>
@@ -453,7 +454,7 @@
 										<option value="passenger_count">Passenger Count</option>
 										<option value="total_amount_dollars">Total Fare (dollars)</option>
 										<option value="pickup_grid_id">Pickup Grid</option>
-										<option value="elevation">Elevation (m)</option>
+										<option value="pickup_elevation">Elevation (m)</option>
 										<option value="weather_condition">Weather Condition</option>
 										<option value="precipitation_inches">Precipitation (inches)</option>
 										<option value="temp_f">Temperature (°F)</option>

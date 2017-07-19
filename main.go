@@ -99,7 +99,8 @@ func NewServer(pilosaAddr string) (*Server, error) {
 		"temp_f",
 		"pressure_i",
 		"humidity",
-		"elevation",
+		"pickup_elevation",
+		"drop_elevation",
 	}
 
 	for _, frameName := range frames {
