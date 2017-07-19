@@ -39,6 +39,10 @@ body {
     width: 200px;
 }
 
+.data-logo {
+    width: 160px;
+}
+
 #intersect {
     padding-top: 1em;
 }

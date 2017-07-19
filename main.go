@@ -73,7 +73,7 @@ func NewServer(pilosaAddr string) (*Server, error) {
 		return nil, fmt.Errorf("client.EnsureIndex: %v", err)
 	}
 
-	// TODO should be automatic
+	// TODO should be automatic from /schema
 	frames := []string{
 		"cab_type",
 		"passenger_count",
