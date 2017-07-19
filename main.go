@@ -5,6 +5,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -21,6 +22,8 @@ import (
 
 const host = ":10101"
 const indexName = "taxi"
+
+var Version = "v0.0.0" // demo version
 
 func main() {
 	pilosaAddr := pflag.String("pilosa", "localhost:10101", "host:port for pilosa")
@@ -51,6 +54,7 @@ func NewServer(pilosaAddr string) (*Server, error) {
 	router := mux.NewRouter()
 	router.HandleFunc("/", server.HandleStatic).Methods("GET")
 	router.HandleFunc("/assets/{file}", server.HandleStatic).Methods("GET")
+	router.HandleFunc("/version", server.HandleVersion).Methods("GET")
 	router.HandleFunc("/query/topn", server.HandleTopN).Methods("GET")
 	router.HandleFunc("/predefined/1", server.HandlePredefined1).Methods("GET")
 	router.HandleFunc("/predefined/2", server.HandlePredefined2).Methods("GET")
@@ -121,6 +125,31 @@ func NewServer(pilosaAddr string) (*Server, error) {
 	server.Index = index
 	server.NumRides = server.getRideCount()
 	return server, nil
+}
+
+func (s *Server) HandleVersion(w http.ResponseWriter, r *http.Request) {
+	if err := json.NewEncoder(w).Encode(struct {
+		DemoVersion   string `json:"demoversion"`
+		PilosaVersion string `json:"pilosaversion"`
+	}{
+		DemoVersion:   Version,
+		PilosaVersion: getPilosaVersion(),
+	}); err != nil {
+		log.Printf("write version response error: %s", err)
+	}
+}
+
+type versionResponse struct {
+	Version string `json:"version"`
+}
+
+func getPilosaVersion() string {
+	resp, _ := http.Get("http://" + host + "/version")
+	defer resp.Body.Close()
+	body, _ := ioutil.ReadAll(resp.Body)
+	version := new(versionResponse)
+	json.Unmarshal(body, &version)
+	return version.Version
 }
 
 func (s *Server) testQuery() error {

@@ -164,6 +164,19 @@ function addCommas(intNum) {
 }
 
 function startup() {
+    populate_version()
+}
+
+function populate_version() {
+  var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/version')
+    var node = document.getElementById('version-info')
+
+    xhr.onload = function() {
+      data = JSON.parse(xhr.responseText)
+      node.innerHTML = "server: " + data['pilosaversion'] + "<br />demo: " + data['demoversion']
+    }
+    xhr.send(null)
 }
 
 var frames = {
