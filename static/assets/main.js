@@ -196,7 +196,8 @@ var frames = {
     // precipitation_type: 0,
     pressure_i: 0,
     humidity: 0,
-    elevation: 0,
+    pickup_elevation: 0,
+    drop_elevation: 0,
 }
 
 function makeIntersectQuery() {
