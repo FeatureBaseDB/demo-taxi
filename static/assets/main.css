@@ -45,6 +45,9 @@ body {
 
 .data-logo {
     width: 160px;
+    font-weight: bold;
+    font-size: 36px;
+    margin-top: 1em;
 }
 
 #intersect {
