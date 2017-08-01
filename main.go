@@ -5,6 +5,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -21,6 +22,8 @@ import (
 
 const host = ":10101"
 const indexName = "taxi"
+
+var Version = "v0.0.0" // demo version
 
 func main() {
 	pilosaAddr := pflag.String("pilosa", "localhost:10101", "host:port for pilosa")
@@ -51,6 +54,7 @@ func NewServer(pilosaAddr string) (*Server, error) {
 	router := mux.NewRouter()
 	router.HandleFunc("/", server.HandleStatic).Methods("GET")
 	router.HandleFunc("/assets/{file}", server.HandleStatic).Methods("GET")
+	router.HandleFunc("/version", server.HandleVersion).Methods("GET")
 	router.HandleFunc("/query/topn", server.HandleTopN).Methods("GET")
 	router.HandleFunc("/predefined/1", server.HandlePredefined1).Methods("GET")
 	router.HandleFunc("/predefined/2", server.HandlePredefined2).Methods("GET")
@@ -73,7 +77,35 @@ func NewServer(pilosaAddr string) (*Server, error) {
 		return nil, fmt.Errorf("client.EnsureIndex: %v", err)
 	}
 
-	frames := []string{"cab_type", "passenger_count", "total_amount_dollars", "pickup_time", "pickup_day", "pickup_month", "pickup_year", "drop_time", "drop_day", "drop_month", "drop_year", "dist_miles", "duration_minutes", "speed_mph", "pickup_grid_id", "drop_grid_id"}
+	// TODO should be automatic from /schema
+	frames := []string{
+		"cab_type",
+		"passenger_count",
+		"total_amount_dollars",
+		"pickup_time",
+		"pickup_day",
+		"pickup_mday",
+		"pickup_month",
+		"pickup_year",
+		"drop_time",
+		"drop_day",
+		"drop_mday",
+		"drop_month",
+		"drop_year",
+		"dist_miles",
+		"duration_minutes",
+		"speed_mph",
+		"pickup_grid_id",
+		"drop_grid_id",
+		"weather_condition",
+		// "precipitation_type",
+		"precipitation_inches",
+		"temp_f",
+		"pressure_i",
+		"humidity",
+		"pickup_elevation",
+		"drop_elevation",
+	}
 
 	for _, frameName := range frames {
 		frame, err := index.Frame(frameName, nil)
@@ -93,6 +125,31 @@ func NewServer(pilosaAddr string) (*Server, error) {
 	server.Index = index
 	server.NumRides = server.getRideCount()
 	return server, nil
+}
+
+func (s *Server) HandleVersion(w http.ResponseWriter, r *http.Request) {
+	if err := json.NewEncoder(w).Encode(struct {
+		DemoVersion   string `json:"demoversion"`
+		PilosaVersion string `json:"pilosaversion"`
+	}{
+		DemoVersion:   Version,
+		PilosaVersion: getPilosaVersion(),
+	}); err != nil {
+		log.Printf("write version response error: %s", err)
+	}
+}
+
+type versionResponse struct {
+	Version string `json:"version"`
+}
+
+func getPilosaVersion() string {
+	resp, _ := http.Get("http://" + host + "/version")
+	defer resp.Body.Close()
+	body, _ := ioutil.ReadAll(resp.Body)
+	version := new(versionResponse)
+	json.Unmarshal(body, &version)
+	return version.Version
 }
 
 func (s *Server) testQuery() error {

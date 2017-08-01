@@ -19,6 +19,10 @@ body {
   font: 10px sans-serif;
 }
 
+#version-info {
+  display: none;
+}
+
 .label {
   font-weight: bold;
 }
@@ -37,6 +41,13 @@ body {
 .logo {
     padding: 1em;
     width: 200px;
+}
+
+.data-logo {
+    width: 160px;
+    font-weight: bold;
+    font-size: 36px;
+    margin-top: 1em;
 }
 
 #intersect {
@@ -92,7 +103,9 @@ a {
 
 .result-query {
     font-family: inconsolata, monospace;
+    white-space: pre;
     font-weight: bold;
+    font-size: 16px;
     background-color: #fafafa;
     border-color: #e4eff4;
 }

@@ -1,5 +1,5 @@
 hash: 64e018cf04bd2e9d84caee718da296021af450c962a2360afa92f8ce0fb6b6d7
-updated: 2017-05-24T15:37:33.174582065-05:00
+updated: 2017-07-18T18:20:57.26025584-07:00
 imports:
 - name: github.com/golang/protobuf
   version: 18c9bb3261723cd5401db4d0c9fbc5c3b6c70fe8
@@ -10,7 +10,7 @@ imports:
 - name: github.com/gorilla/mux
   version: bcd8bc72b08df0f70df986b97f95590779502d31
 - name: github.com/pilosa/go-pilosa
-  version: 04986e9f751f45f59d4f02fd29ad2a2ee7adadef
+  version: bbd4a5db515f272879da3dc9282b14031c70325e
   subpackages:
   - internal
 - name: github.com/rakyll/statik

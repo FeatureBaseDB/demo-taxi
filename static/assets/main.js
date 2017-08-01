@@ -1,14 +1,17 @@
 $("#intersectForm").bind('submit', function(event) {
     event.preventDefault();
-    var query = makeQuery();
+    var query = makeIntersectQuery();
     if (!query) {
+        console.log("No query.");
         return
     }
+    console.log("Q", query);
     doAjax('query', query, function(data) {
         if (data.error) {
-            $('#intersectResults').hide()
+            console.log("QError", data.error);
+            $('#intersectResults').hide();
         } else {
-            $('#intersectResults').show()
+            $('#intersectResults').show();
         }
         $("#intersect-result-query").html(query);
         $("#intersect-result-latency").text(data['seconds'].toString().substring(0,5) + ' sec');
@@ -164,24 +167,49 @@ function addCommas(intNum) {
 }
 
 function startup() {
+    populate_version()
 }
 
-var frameToID = {
-    cab_type: "cabType",
-    pickup_year: "pickupYear",
-    dist_miles: "distance",
-    duration_minutes: "duration_minutes",
-    speed_mph: "speed_mph",
-    passenger_count: "passengerCount",
-    total_amount_dollars: "totalAmount_dollars"
+function populate_version() {
+  var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/version')
+    var node = document.getElementById('version-info')
+
+    xhr.onload = function() {
+      data = JSON.parse(xhr.responseText)
+      node.innerHTML = "server: " + data['pilosaversion'] + "<br />demo: " + data['demoversion']
+    }
+    xhr.send(null)
 }
 
-function makeQuery() {
+var frames = {
+    cab_type: 0,
+    pickup_year: 0,
+    pickup_month: 0,
+    pickup_day: 0,
+    pickup_time: 0,
+    dist_miles: 0,
+    duration_minutes: 0,
+    speed_mph: 0,
+    passenger_count: 0,
+    total_amount_dollars: 0,
+    weather_condition: 0,
+    temp_f: 0,
+    precipitation_inches: 0,
+    // precipitation_type: 0,
+    pressure_i: 0,
+    humidity: 0,
+    pickup_elevation: 0,
+    drop_elevation: 0,
+}
+
+function makeIntersectQuery() {
+    indent = "  "
     var toIntersect = [];
-
-    for (var frame in frameToID) {
-        $el = $("#" + frameToID[frame]);
-        var val = $el.val();
+    var frame_els = $(".intersect-frame")  // TODO should be able to use this instead of frames dict
+    for (var frame in frames) {
+        el = $("#" + frame);
+        var val = el.val();
         if (!val) {
             continue;
         }
@@ -190,18 +218,18 @@ function makeQuery() {
             if (!val[i]) {
                 continue;
             }            
-            toUnion.push("Bitmap(frame='" + frame + "',rowID=" + val[i] + ")");
+            toUnion.push(indent + "Bitmap(frame='" + frame + "',rowID=" + val[i] + ")");
         }
         if (toUnion.length == 1) {
             toIntersect.push(toUnion[0]);
         }
         else if (toUnion.length > 1) {
-            toIntersect.push("Union(" + toUnion.join(", ") + ")");
+            toIntersect.push(indent + "Union(\n" + indent+ toUnion.join(",\n" + indent) + "\n" + indent + ")");
         }
         
     }
     if (toIntersect.length > 0) {
-        return "Count(Intersect(" + toIntersect.join(", ") + "))";
+        return "Count(Intersect(\n" + toIntersect.join(", \n") + "\n))";
     }
     return "";
 }
