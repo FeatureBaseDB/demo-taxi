@@ -219,7 +219,7 @@ func (s *Server) HandleTopN(w http.ResponseWriter, r *http.Request) {
 
 	if frame == "pickup_grid_id" {
 		resp := topNGridResponse{}
-		resp.NumRides = s.NumRides
+		resp.NumRides = s.getRideCount()
 		resp.Description = "Pickup Locations"
 		for _, c := range response.Result().CountItems {
 			x := c.ID % 100
@@ -235,7 +235,7 @@ func (s *Server) HandleTopN(w http.ResponseWriter, r *http.Request) {
 	} else {
 		resp := topnResponse{}
 		resp.Rows = make([]topnRow, 0, 50)
-		resp.NumRides = s.NumRides
+		resp.NumRides = s.getRideCount()
 		resp.Query = fmt.Sprintf("TopN(frame=%s)", frame)
 
 		maxID := maxIDMap[frame]
@@ -296,7 +296,7 @@ func (s *Server) HandlePredefined1(w http.ResponseWriter, r *http.Request) {
 
 	resp := predefined1Response{}
 	resp.Description = "Profile count by cab type (Mark #1)"
-	resp.NumRides = s.NumRides
+	resp.NumRides = s.getRideCount()
 
 	resp.Rows = make([]predefined1Row, 0, 5)
 	for _, c := range response.Result().CountItems {
@@ -336,7 +336,7 @@ func (s *Server) HandlePredefined2(w http.ResponseWriter, r *http.Request) {
 		go s.avgCostForPassengerCount(pcount, arr, wg)
 	}
 	wg.Wait()
-	resp.NumRides = s.NumRides
+	resp.NumRides = s.getRideCount()
 	resp.Description = "average(total_amount) by passenger_count (Mark #2)"
 	resp.Rows = make([]predefined2Row, 0, maxpcount)
 	for id, amt := range arr {
@@ -420,7 +420,7 @@ func (s *Server) HandlePredefined3(w http.ResponseWriter, r *http.Request) {
 	}
 	dif := time.Since(t)
 
-	resp.NumRides = s.NumRides
+	resp.NumRides = s.getRideCount()
 	resp.Seconds = float64(dif.Seconds())
 	resp.Description = "Profile count by (year, passenger_count) (Mark #3) (go)"
 
@@ -494,7 +494,7 @@ func (s *Server) HandlePredefined4(w http.ResponseWriter, r *http.Request) {
 	sort.Sort(byYearCount(resp.Rows))
 	dif := time.Since(t)
 
-	resp.NumRides = s.NumRides
+	resp.NumRides = s.getRideCount()
 	resp.Description = "Profile count by (year, passenger_count, trip_distance), ordered by (year, count) (Mark #4) (go)"
 	resp.Seconds = float64(dif.Seconds())
 
@@ -580,7 +580,7 @@ func (s *Server) HandlePredefined5(w http.ResponseWriter, r *http.Request) {
 
 	resp := predefined5Response{}
 	resp.Description = "Count of pickup locations for top dropoff location"
-	resp.NumRides = s.NumRides
+	resp.NumRides = s.getRideCount()
 
 	resp.Rows = make([]predefined5Row, 0, 5)
 	for _, c := range response.Result().CountItems {
@@ -628,7 +628,7 @@ func (s *Server) HandleQuery(w http.ResponseWriter, r *http.Request) {
 	dif := time.Since(start)
 
 	resp := intersectResponse{}
-	resp.NumRides = s.NumRides
+	resp.NumRides = s.getRideCount()
 	resp.Seconds = float64(dif.Seconds())
 	resp.Rows = []intersectRow{intersectRow{response.Result().Count}}
 
