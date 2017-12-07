@@ -297,7 +297,7 @@ func (s *Server) HandlePredefined1(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := predefined1Response{}
-	resp.Description = "Profile count by cab type (Mark #1)"
+	resp.Description = "Ride count by cab type (Mark #1)"
 	resp.NumRides = s.getRideCount()
 
 	resp.Rows = make([]predefined1Row, 0, 5)
@@ -424,7 +424,7 @@ func (s *Server) HandlePredefined3(w http.ResponseWriter, r *http.Request) {
 
 	resp.NumRides = s.getRideCount()
 	resp.Seconds = float64(dif.Seconds())
-	resp.Description = "Profile count by (year, passenger_count) (Mark #3) (go)"
+	resp.Description = "Ride count by (year, passenger_count) (Mark #3)"
 
 	err := json.NewEncoder(w).Encode(resp)
 	if err != nil {
@@ -497,7 +497,7 @@ func (s *Server) HandlePredefined4(w http.ResponseWriter, r *http.Request) {
 	dif := time.Since(t)
 
 	resp.NumRides = s.getRideCount()
-	resp.Description = "Profile count by (year, passenger_count, trip_distance), ordered by (year, count) (Mark #4) (go)"
+	resp.Description = "Ride count by (year, passenger_count, trip_distance), ordered by (year, count) (Mark #4)"
 	resp.Seconds = float64(dif.Seconds())
 
 	err := json.NewEncoder(w).Encode(resp)
