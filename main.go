@@ -145,6 +145,7 @@ type versionResponse struct {
 
 func getPilosaVersion() string {
 	resp, err := http.Get("http://" + host + "/version")
+	log.Println("problem getting version: ", err)
 	if err != nil {
 		return ""
 	}
