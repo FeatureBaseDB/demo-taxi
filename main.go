@@ -144,7 +144,10 @@ type versionResponse struct {
 }
 
 func getPilosaVersion() string {
-	resp, _ := http.Get("http://" + host + "/version")
+	resp, err := http.Get("http://" + host + "/version")
+	if err != nil {
+		return ""
+	}
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
 	version := new(versionResponse)
