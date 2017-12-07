@@ -20,7 +20,10 @@ body {
 }
 
 #version-info {
-  display: none;
+    font: 12px sans-serif;
+    float: right;
+    padding-top: 1em;
+    display: block;
 }
 
 .label {

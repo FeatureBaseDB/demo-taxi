@@ -20,13 +20,13 @@ import (
 	"github.com/spf13/pflag"
 )
 
-const host = ":10101"
+const defaultHost = "http://localhost:10101"
 const indexName = "taxi"
 
 var Version = "v0.0.0" // demo version
 
 func main() {
-	pilosaAddr := pflag.String("pilosa", "localhost:10101", "host:port for pilosa")
+	pilosaAddr := pflag.String("pilosa", defaultHost, "host:port for pilosa")
 	pflag.Parse()
 
 	server, err := NewServer(*pilosaAddr)
@@ -39,6 +39,7 @@ func main() {
 }
 
 type Server struct {
+	Address  string
 	Router   *mux.Router
 	Client   *pilosa.Client
 	Index    *pilosa.Index
@@ -48,7 +49,8 @@ type Server struct {
 
 func NewServer(pilosaAddr string) (*Server, error) {
 	server := &Server{
-		Frames: make(map[string]*pilosa.Frame),
+		Address: pilosaAddr,
+		Frames:  make(map[string]*pilosa.Frame),
 	}
 
 	router := mux.NewRouter()
@@ -133,7 +135,7 @@ func (s *Server) HandleVersion(w http.ResponseWriter, r *http.Request) {
 		PilosaVersion string `json:"pilosaversion"`
 	}{
 		DemoVersion:   Version,
-		PilosaVersion: getPilosaVersion(),
+		PilosaVersion: s.getPilosaVersion(),
 	}); err != nil {
 		log.Printf("write version response error: %s", err)
 	}
@@ -143,10 +145,10 @@ type versionResponse struct {
 	Version string `json:"version"`
 }
 
-func getPilosaVersion() string {
-	resp, err := http.Get("http://" + host + "/version")
-	log.Println("problem getting version: ", err)
+func (s *Server) getPilosaVersion() string {
+	resp, err := http.Get(s.Address + "/version")
 	if err != nil {
+		log.Printf("problem getting version: %v\n", err)
 		return ""
 	}
 	defer resp.Body.Close()
