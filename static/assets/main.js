@@ -167,7 +167,9 @@ function addCommas(intNum) {
 }
 
 function startup() {
-    populate_version()
+    populate_version();
+    populate_intersect_form();
+    populate_topn_form();
 }
 
 function populate_version() {
@@ -180,6 +182,188 @@ function populate_version() {
       node.innerHTML = "server: " + data['pilosaversion'] + "<br />demo: " + data['demoversion']
     }
     xhr.send(null)
+}
+
+function populate_intersect_form() {
+    el = $("#intersect-form-col");
+    console.log(el);
+    width = 3;
+    colID = 0;
+    row = $('<div class="form-group row">');
+    for (var n=0; n<frame_controls.length; n++) {
+        /*
+          create something like this:
+          <div class="col-sm-4">
+            <label for="cab_type" class="col-form-label">Cab type</label>
+            <select name="cab_type" form="intersectForm" class="intersect-frame form-control" id="cab_type" onchange="$(this.form).trigger('submit')" multiple="multiple">
+              <option></option>
+              <option value="0">Green</option>
+              <option value="1">Yellow</option>
+            </select>
+          </div>
+        */
+
+        appendHR = false;
+        if("row_seq" in frame_controls[n]) {
+            cell = create_cell_from_sequence(frame_controls[n]);
+        } else if ("row_map" in frame_controls[n]) {
+            cell = create_cell_from_map(frame_controls[n]);
+        } else if ("logo" in frame_controls[n]) {
+            cell = create_image(frame_controls[n]);
+            appendHR = true;
+        }
+        row.append(cell);
+        colID++;
+
+        if(colID == width) {
+            /*
+            group things into 3 columns in each row
+            <div class="form-group row">
+            </div>
+            */
+            colID = 0;
+            el.append(row);
+            if(appendHR) {
+                el.append('<hr>');
+            }
+            row = $('<div class="form-group row">');
+        }
+    }
+}
+
+function create_image(frame_control) {
+    /*
+      {
+        logo: "/assets/nyc-opendata-logo.png",
+        text: "NYC OpenData"
+      },
+    */
+    div = $('<div class="col-sm-4">');
+    $("<img>")
+        .attr("src", frame_control["logo"])
+        .attr("class", "data-logo")
+        .appendTo(div);
+
+    return div;
+}
+
+function create_cell_from_map(frame_control) {
+    /*
+    {
+        frame: "pickup_day",
+        group: "nyc-opendata",
+        name: "Pickup weekday",
+        row_map: {
+            0: "Monday",
+            1: "Tuesday",
+            2: "Wednesday",
+            3: "Thursday",
+            4: "Friday",
+            5: "Saturday",
+            6: "Sunday"
+        }
+    },
+    */
+
+    div = $('<div class="col-sm-4">');
+    label = $("<label>")
+        .attr("for", frame_control["frame"])
+        .attr("class", "col-form-label")
+        .html(frame_control["name"])
+        .appendTo(div);
+    sel = $("<select>")
+        .attr("name", frame_control["frame"])
+        .attr("form", "intersectForm")
+        .attr("class", "intersect-frame form-control")
+        .attr("id", frame_control["frame"])
+        .attr("onchange", "$(this.form).trigger('submit')")
+        .attr("multiple", "multiple")
+        .appendTo(div);
+
+    sel.append($("<option>"));
+    for(k in frame_control['row_map']) {
+        //console.log(k, frame_control['row_map'][k]);
+        sel.append($("<option>", {value: k, text: frame_control['row_map'][k]}));
+    }
+    return div;
+}
+
+function create_cell_from_sequence(frame_control) {
+    /*
+      frame_controls looks like this:
+      {
+        frame: "temp_f",
+        group: "weather",
+        name: "Temperature",
+        row_seq: {
+          min: 160,
+          max: 238,
+          step: 2
+        },
+        val_seq: {
+          min: 50,
+          max: 99
+        },
+        suffix: "°F"
+      },
+    */
+    div = $('<div class="col-sm-4">');
+    label = $("<label>")
+        .attr("for", frame_control["frame"])
+        .attr("class", "col-form-label")
+        .html(frame_control["name"])
+        .appendTo(div);
+    sel = $("<select>")
+        .attr("name", frame_control["frame"])
+        .attr("form", "intersectForm")
+        .attr("class", "intersect-frame form-control")
+        .attr("id", frame_control["frame"])
+        .attr("onchange", "$(this.form).trigger('submit')")
+        .attr("multiple", "multiple")
+        .appendTo(div);
+
+    row_min = frame_control['row_seq']['min'];
+    row_max = frame_control['row_seq']['max'];
+    row_step = 1;
+    if("step" in frame_control['row_seq']) {
+        row_step = frame_control['row_seq']['step'];
+    }
+    num_elements = (row_max - row_min) / row_step + 1;
+
+    if('val_seq' in frame_control) {
+        val_min = frame_control['val_seq']['min'];
+        val_max = frame_control['val_seq']['max'];
+    } else {
+        val_min = row_min;
+        val_max = row_max;
+    }
+    val_step = row_step * (val_max - val_min) / (row_max - row_min);
+    console.log('val step: ' + val_step);
+
+    sel.append($("<option>"));
+    for(n=0; n<num_elements; n++) {
+        pilosa_row = row_min + n * row_step;
+        value = val_min + n * val_step;
+        value = Math.round(value * 100) / 100;
+        sel.append($("<option>", {value: pilosa_row, text: value}));
+    }
+
+    return div;
+}
+
+
+function populate_topn_form() {
+    console.log("populate_topn_form");
+    el = $('#frame');
+    console.log(el);
+    for (n=0; n<frame_controls.length; n++) {
+        if ("frame" in frame_controls[n]) {
+            el.append('<option value="' + frame_controls[n]['frame']+ '">' + frame_controls[n]['name'] + '</option>');
+            console.log(frame_controls[n]['frame']);
+        } else if ("logo" in frame_controls[n]) {
+            el.append('<option disabled="disabled">----</option>');
+        }
+    }
 }
 
 var frames = {
@@ -202,6 +386,7 @@ var frames = {
     pickup_elevation: 0,
     drop_elevation: 0,
 }
+
 
 function makeIntersectQuery() {
     indent = "  "
