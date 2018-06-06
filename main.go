@@ -16,6 +16,7 @@ import (
 	"github.com/gorilla/mux"
 	_ "github.com/pilosa/demo-taxi/statik"
 	pilosa "github.com/pilosa/go-pilosa"
+	"github.com/pkg/errors"
 	"github.com/rakyll/statik/fs"
 	"github.com/spf13/pflag"
 )
@@ -60,6 +61,7 @@ func NewServer(pilosaAddr string) (*Server, error) {
 	router.HandleFunc("/query/topn", server.HandleTopN).Methods("GET")
 	router.HandleFunc("/predefined/1", server.HandlePredefined1).Methods("GET")
 	router.HandleFunc("/predefined/2", server.HandlePredefined2).Methods("GET")
+	router.HandleFunc("/predefinedalt/2", server.HandlePredefinedAlt2).Methods("GET")
 	router.HandleFunc("/predefined/3", server.HandlePredefined3).Methods("GET")
 	router.HandleFunc("/predefined/4", server.HandlePredefined4).Methods("GET")
 	router.HandleFunc("/predefined/5", server.HandlePredefined5).Methods("GET")
@@ -69,8 +71,11 @@ func NewServer(pilosaAddr string) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	client := pilosa.NewClientWithURI(pilosaURI)
-	index, err := pilosa.NewIndex(indexName, nil)
+	client, err := pilosa.NewClient(pilosaURI)
+	if err != nil {
+		return nil, errors.Wrap(err, "getting client")
+	}
+	index, err := pilosa.NewIndex(indexName)
 	if err != nil {
 		return nil, fmt.Errorf("pilosa.NewIndex: %v", err)
 	}
@@ -169,7 +174,7 @@ func (s *Server) testQuery() error {
 	result := response.Result()
 	// Act on the result
 	if result != nil {
-		bits := result.Bitmap.Bits
+		bits := result.Bitmap().Bits
 		fmt.Printf("Got bits: %v\n", bits)
 	}
 	return nil
@@ -223,7 +228,7 @@ func (s *Server) HandleTopN(w http.ResponseWriter, r *http.Request) {
 		resp := topNGridResponse{}
 		resp.NumRides = s.getRideCount()
 		resp.Description = "Pickup Locations"
-		for _, c := range response.Result().CountItems {
+		for _, c := range response.Result().CountItems() {
 			x := c.ID % 100
 			y := c.ID / 100
 			resp.Rows = append(resp.Rows, topNGridRow{c.ID, c.Count, x, y})
@@ -244,7 +249,7 @@ func (s *Server) HandleTopN(w http.ResponseWriter, r *http.Request) {
 		if maxID == 0 {
 			maxID = 1000000
 		}
-		for _, ci := range response.Result().CountItems {
+		for _, ci := range response.Result().CountItems() {
 			if ci.ID > maxID {
 				continue
 			}
@@ -301,7 +306,7 @@ func (s *Server) HandlePredefined1(w http.ResponseWriter, r *http.Request) {
 	resp.NumRides = s.getRideCount()
 
 	resp.Rows = make([]predefined1Row, 0, 5)
-	for _, c := range response.Result().CountItems {
+	for _, c := range response.Result().CountItems() {
 		resp.Rows = append(resp.Rows, predefined1Row{c.ID, c.Count})
 	}
 
@@ -389,16 +394,54 @@ func (s *Server) avgCostForPassengerCount(pcount int, values []float64, wg *sync
 	}
 	var num_rides uint64 = 0
 	var total_amount uint64 = 0
-	if len(results.Results()[0].CountItems) == 0 {
+	if len(results.Results()[0].CountItems()) == 0 {
 		// prevent NaN
 		values[pcount] = 0
 		return
 	}
-	for _, cri := range results.Results()[0].CountItems {
+	for _, cri := range results.Results()[0].CountItems() {
 		num_rides += cri.Count
 		total_amount += cri.ID * cri.Count
 	}
 	values[pcount] = float64(total_amount) / float64(num_rides)
+}
+
+func (s *Server) HandlePredefinedAlt2(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+
+	var wg = &sync.WaitGroup{}
+	maxpcount := 8
+	resp := predefined2Response{}
+	arr := make([]float64, maxpcount+1)
+	for pcount := 1; pcount <= maxpcount; pcount++ {
+		wg.Add(1)
+		go s.avgCostForPassengerCountAlt(pcount, arr, wg)
+	}
+	wg.Wait()
+	resp.NumRides = s.getRideCount()
+	resp.Description = "average(total_amount) by passenger_count (Mark #2) alt impl."
+	resp.Rows = make([]predefined2Row, 0, maxpcount)
+	for id, amt := range arr {
+		resp.Rows = append(resp.Rows, predefined2Row{uint64(id), amt})
+	}
+	resp.Seconds = time.Since(start).Seconds()
+
+	enc := json.NewEncoder(w)
+	err := enc.Encode(resp)
+	if err != nil {
+		log.Printf("writing results: %v to responsewriter: %v", resp, err)
+	}
+}
+
+func (s *Server) avgCostForPassengerCountAlt(pcount int, values []float64, wg *sync.WaitGroup) {
+	defer wg.Done()
+	resp, err := s.Client.Query(s.Index.RawQuery(fmt.Sprintf("Sum(Bitmap(frame=passenger_count, row=%d), frame=cost_cents, field=cost_cents)", pcount)))
+	if err != nil {
+		log.Println(errors.Wrap(err, "sum query for passenger"))
+	}
+	res := resp.ResultList[0]
+
+	values[pcount] = float64(res.Value()) / float64(res.Count())
 }
 
 func (s *Server) HandlePredefined3(w http.ResponseWriter, r *http.Request) {
@@ -440,7 +483,7 @@ func (s *Server) pcountTopNPerYear(year int, rows chan predefined3Row, wg *sync.
 		log.Printf("query %v failed with %v", q, err)
 	}
 
-	for _, ci := range response.Results()[0].CountItems {
+	for _, ci := range response.Results()[0].CountItems() {
 		rows <- predefined3Row{ci.Count, year, int(ci.ID)}
 	}
 }
@@ -519,7 +562,7 @@ func (s *Server) distTopNPerYearPcount(keys <-chan predefined4Row, rows chan<- p
 			log.Printf("query %v failed with: %v", q, err)
 			return
 		}
-		for _, ci := range response.Results()[0].CountItems {
+		for _, ci := range response.Results()[0].CountItems() {
 			rows <- predefined4Row{ci.Count, int(ci.ID), key.PassengerCount, key.PickupYear}
 		}
 	}
@@ -558,7 +601,7 @@ func (s *Server) getRideCount() uint64 {
 	for n := 0; n < 3; n++ {
 		q := s.Index.Count(s.Frames["cab_type"].Bitmap(uint64(n)))
 		response, _ := s.Client.Query(q, nil)
-		count += response.Result().Count
+		count += uint64(response.Result().Count())
 	}
 	return count
 }
@@ -572,7 +615,7 @@ func (s *Server) HandlePredefined5(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("query %v failed with: %v", q, err)
 	}
-	topDropoffID := response.Result().CountItems[0].ID
+	topDropoffID := response.Result().CountItems()[0].ID
 
 	q = s.Frames["pickup_grid_id"].BitmapTopN(0, dropFrame.Bitmap(topDropoffID))
 	response, err = s.Client.Query(q, nil)
@@ -585,7 +628,7 @@ func (s *Server) HandlePredefined5(w http.ResponseWriter, r *http.Request) {
 	resp.NumRides = s.getRideCount()
 
 	resp.Rows = make([]predefined5Row, 0, 5)
-	for _, c := range response.Result().CountItems {
+	for _, c := range response.Result().CountItems() {
 		x := c.ID % 100
 		y := c.ID / 100
 		resp.Rows = append(resp.Rows, predefined5Row{c.ID, c.Count, x, y})
@@ -632,7 +675,7 @@ func (s *Server) HandleQuery(w http.ResponseWriter, r *http.Request) {
 	resp := intersectResponse{}
 	resp.NumRides = s.getRideCount()
 	resp.Seconds = float64(dif.Seconds())
-	resp.Rows = []intersectRow{intersectRow{response.Result().Count}}
+	resp.Rows = []intersectRow{intersectRow{uint64(response.Result().Count())}}
 
 	enc := json.NewEncoder(w)
 	err = enc.Encode(resp)
