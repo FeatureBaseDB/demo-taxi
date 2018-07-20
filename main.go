@@ -295,7 +295,7 @@ func (s *Server) HandlePredefined1(w http.ResponseWriter, r *http.Request) {
 	// N queries, N = cardinality of cab_type (3) - lowest priority
 	start := time.Now()
 
-	q := s.Frames["cab_type"].TopN(5)
+	q := s.Frames["cab_type"].TopN(2)
 	response, err := s.Client.Query(q, nil)
 	if err != nil {
 		log.Printf("query %v failed with: %v", q, err)
@@ -310,7 +310,7 @@ func (s *Server) HandlePredefined1(w http.ResponseWriter, r *http.Request) {
 		resp.Rows = append(resp.Rows, predefined1Row{c.ID, c.Count})
 	}
 
-	resp.Seconds = time.Now().Sub(start).Seconds()
+	resp.Seconds = time.Since(start).Seconds()
 
 	enc := json.NewEncoder(w)
 	err = enc.Encode(resp)
