@@ -44,14 +44,14 @@ type Server struct {
 	Router   *mux.Router
 	Client   *pilosa.Client
 	Index    *pilosa.Index
-	Frames   map[string]*pilosa.Frame
+	Fields   map[string]*pilosa.Field
 	NumRides uint64
 }
 
 func NewServer(pilosaAddr string) (*Server, error) {
 	server := &Server{
 		Address: pilosaAddr,
-		Frames:  make(map[string]*pilosa.Frame),
+		Fields:  make(map[string]*pilosa.Field),
 	}
 
 	router := mux.NewRouter()
@@ -75,7 +75,7 @@ func NewServer(pilosaAddr string) (*Server, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "getting client")
 	}
-	index, err := pilosa.NewIndex(indexName)
+	index := pilosa.NewIndex(indexName)
 	if err != nil {
 		return nil, fmt.Errorf("pilosa.NewIndex: %v", err)
 	}
@@ -114,17 +114,17 @@ func NewServer(pilosaAddr string) (*Server, error) {
 		"drop_elevation",
 	}
 
-	for _, frameName := range frames {
-		frame, err := index.Frame(frameName, nil)
+	for _, fieldName := range frames {
+		field := index.Field(fieldName, nil)
 		if err != nil {
-			return nil, fmt.Errorf("index.Frame %v: %v", frameName, err)
+			return nil, fmt.Errorf("index.Field %v: %v", fieldName, err)
 		}
-		err = client.EnsureFrame(frame)
+		err = client.EnsureField(field)
 		if err != nil {
-			return nil, fmt.Errorf("client.EnsureFrame %v: %v", frameName, err)
+			return nil, fmt.Errorf("client.EnsureField %v: %v", fieldName, err)
 		}
 
-		server.Frames[frameName] = frame
+		server.Fields[fieldName] = field
 	}
 
 	server.Router = router
@@ -164,8 +164,8 @@ func (s *Server) getPilosaVersion() string {
 }
 
 func (s *Server) testQuery() error {
-	// Send a Bitmap query. PilosaException is thrown if execution of the query fails.
-	response, err := s.Client.Query(s.Frames["pickup_year"].Bitmap(2013), nil)
+	// Send a Row query. PilosaException is thrown if execution of the query fails.
+	response, err := s.Client.Query(s.Fields["pickup_year"].Row(2013), nil)
 	if err != nil {
 		return fmt.Errorf("s.Client.Query: %v", err)
 	}
@@ -174,7 +174,7 @@ func (s *Server) testQuery() error {
 	result := response.Result()
 	// Act on the result
 	if result != nil {
-		bits := result.Bitmap().Bits
+		bits := result.Row().Columns
 		fmt.Printf("Got bits: %v\n", bits)
 	}
 	return nil
@@ -217,14 +217,14 @@ var maxIDMap map[string]uint64 = map[string]uint64{
 func (s *Server) HandleTopN(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 
-	frame := r.URL.Query()["frame"][0]
-	q := s.Frames[frame].TopN(0)
+	field := r.URL.Query()["field"][0]
+	q := s.Fields[field].TopN(0)
 
 	response, err := s.Client.Query(q, nil)
 
 	dif := time.Since(start)
 
-	if frame == "pickup_grid_id" {
+	if field == "pickup_grid_id" {
 		resp := topNGridResponse{}
 		resp.NumRides = s.getRideCount()
 		resp.Description = "Pickup Locations"
@@ -243,9 +243,9 @@ func (s *Server) HandleTopN(w http.ResponseWriter, r *http.Request) {
 		resp := topnResponse{}
 		resp.Rows = make([]topnRow, 0, 50)
 		resp.NumRides = s.getRideCount()
-		resp.Query = fmt.Sprintf("TopN(frame=%s)", frame)
+		resp.Query = fmt.Sprintf("TopN(field=%s)", field)
 
-		maxID := maxIDMap[frame]
+		maxID := maxIDMap[field]
 		if maxID == 0 {
 			maxID = 1000000
 		}
@@ -295,7 +295,7 @@ func (s *Server) HandlePredefined1(w http.ResponseWriter, r *http.Request) {
 	// N queries, N = cardinality of cab_type (3) - lowest priority
 	start := time.Now()
 
-	q := s.Frames["cab_type"].TopN(2)
+	q := s.Fields["cab_type"].TopN(2)
 	response, err := s.Client.Query(q, nil)
 	if err != nil {
 		log.Printf("query %v failed with: %v", q, err)
@@ -375,16 +375,16 @@ func (s *Server) avgCostForPassengerCount(pcount int, values []float64, wg *sync
 	// TopN(frame=total_amount_dollars, Bitmap(frame=passenger_count, rowID=pcount))
 	// for each $ amount, add amnt*num_rides to total amount and add num_rides to total rides.
 	// now just calc avg
-	tadFrame, ok := s.Frames["total_amount_dollars"]
+	tadField, ok := s.Fields["total_amount_dollars"]
 	if !ok {
 		log.Println("total_amount_dollars frame doesn't exist")
 	}
-	pcFrame, ok := s.Frames["passenger_count"]
+	pcField, ok := s.Fields["passenger_count"]
 	if !ok {
 		log.Println("passenger_count frame doesn't exist")
 	}
-	pcBitmap := pcFrame.Bitmap(uint64(pcount))
-	query := tadFrame.BitmapTopN(1000, pcBitmap)
+	pcBitmap := pcField.Row(uint64(pcount))
+	query := tadField.RowTopN(1000, pcBitmap)
 	qtime := time.Now()
 	results, err := s.Client.Query(query, nil)
 	log.Printf("query time for passenger count: %v is %v", pcount, time.Since(qtime).Seconds())
@@ -477,7 +477,7 @@ func (s *Server) HandlePredefined3(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) pcountTopNPerYear(year int, rows chan predefined3Row, wg *sync.WaitGroup) {
 	defer wg.Done()
-	q := s.Frames["passenger_count"].BitmapTopN(10, s.Frames["pickup_year"].Bitmap(uint64(year)))
+	q := s.Fields["passenger_count"].RowTopN(10, s.Fields["pickup_year"].Row(uint64(year)))
 	response, err := s.Client.Query(q, nil)
 	if err != nil {
 		log.Printf("query %v failed with %v", q, err)
@@ -553,10 +553,10 @@ func (s *Server) distTopNPerYearPcount(keys <-chan predefined4Row, rows chan<- p
 	defer wg.Done()
 	for key := range keys {
 		qIntersect := s.Index.Intersect(
-			s.Frames["pickup_year"].Bitmap(uint64(key.PickupYear)),
-			s.Frames["passenger_count"].Bitmap(uint64(key.PassengerCount)),
+			s.Fields["pickup_year"].Row(uint64(key.PickupYear)),
+			s.Fields["passenger_count"].Row(uint64(key.PassengerCount)),
 		)
-		q := s.Frames["dist_miles"].BitmapTopN(10, qIntersect)
+		q := s.Fields["dist_miles"].RowTopN(10, qIntersect)
 		response, err := s.Client.Query(q, nil)
 		if err != nil {
 			log.Printf("query %v failed with: %v", q, err)
@@ -599,7 +599,7 @@ type predefined4Row struct {
 func (s *Server) getRideCount() uint64 {
 	var count uint64 = 0
 	for n := 0; n < 3; n++ {
-		q := s.Index.Count(s.Frames["cab_type"].Bitmap(uint64(n)))
+		q := s.Index.Count(s.Fields["cab_type"].Row(uint64(n)))
 		response, _ := s.Client.Query(q, nil)
 		count += uint64(response.Result().Count())
 	}
@@ -609,15 +609,15 @@ func (s *Server) getRideCount() uint64 {
 func (s *Server) HandlePredefined5(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 
-	dropFrame := s.Frames["drop_grid_id"]
-	q := dropFrame.TopN(1)
+	dropField := s.Fields["drop_grid_id"]
+	q := dropField.TopN(1)
 	response, err := s.Client.Query(q, nil)
 	if err != nil {
 		log.Printf("query %v failed with: %v", q, err)
 	}
 	topDropoffID := response.Result().CountItems()[0].ID
 
-	q = s.Frames["pickup_grid_id"].BitmapTopN(0, dropFrame.Bitmap(topDropoffID))
+	q = s.Fields["pickup_grid_id"].RowTopN(0, dropField.Row(topDropoffID))
 	response, err = s.Client.Query(q, nil)
 	if err != nil {
 		log.Printf("query %v failed with: %v", q, err)
