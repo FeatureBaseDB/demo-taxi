@@ -85,7 +85,7 @@ func NewServer(pilosaAddr string) (*Server, error) {
 	}
 
 	// TODO should be automatic from /schema
-	frames := []string{
+	fields := []string{
 		"cab_type",
 		"passenger_count",
 		"total_amount_dollars",
@@ -114,7 +114,7 @@ func NewServer(pilosaAddr string) (*Server, error) {
 		"drop_elevation",
 	}
 
-	for _, fieldName := range frames {
+	for _, fieldName := range fields {
 		field := index.Field(fieldName, nil)
 		if err != nil {
 			return nil, fmt.Errorf("index.Field %v: %v", fieldName, err)
@@ -273,7 +273,7 @@ type topNGridResponse struct {
 }
 
 type topNGridRow struct {
-	PickupGridID uint64 `json:"bitmapID"`
+	PickupGridID uint64 `json:"rowID"`
 	Count        uint64 `json:"count"`
 	X            uint64 `json:"x"`
 	Y            uint64 `json:"y"`
@@ -287,7 +287,7 @@ type topnResponse struct {
 }
 
 type topnRow struct {
-	RowId uint64 `json:"bitmapID"`
+	RowId uint64 `json:"rowID"`
 	Count uint64 `json:"count"`
 }
 
@@ -372,19 +372,19 @@ type predefined2Row struct {
 
 func (s *Server) avgCostForPassengerCount(pcount int, values []float64, wg *sync.WaitGroup) {
 	defer wg.Done()
-	// TopN(frame=total_amount_dollars, Bitmap(frame=passenger_count, rowID=pcount))
+	// TopN(field=total_amount_dollars, Row(passenger_count=pcount))
 	// for each $ amount, add amnt*num_rides to total amount and add num_rides to total rides.
 	// now just calc avg
 	tadField, ok := s.Fields["total_amount_dollars"]
 	if !ok {
-		log.Println("total_amount_dollars frame doesn't exist")
+		log.Println("total_amount_dollars field doesn't exist")
 	}
 	pcField, ok := s.Fields["passenger_count"]
 	if !ok {
-		log.Println("passenger_count frame doesn't exist")
+		log.Println("passenger_count field doesn't exist")
 	}
-	pcBitmap := pcField.Row(uint64(pcount))
-	query := tadField.RowTopN(1000, pcBitmap)
+	pcRow := pcField.Row(uint64(pcount))
+	query := tadField.RowTopN(1000, pcRow)
 	qtime := time.Now()
 	results, err := s.Client.Query(query, nil)
 	log.Printf("query time for passenger count: %v is %v", pcount, time.Since(qtime).Seconds())
@@ -435,7 +435,7 @@ func (s *Server) HandlePredefinedAlt2(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) avgCostForPassengerCountAlt(pcount int, values []float64, wg *sync.WaitGroup) {
 	defer wg.Done()
-	resp, err := s.Client.Query(s.Index.RawQuery(fmt.Sprintf("Sum(Bitmap(frame=passenger_count, row=%d), frame=cost_cents, field=cost_cents)", pcount)))
+	resp, err := s.Client.Query(s.Index.RawQuery(fmt.Sprintf("Sum(Row(passenger_count=%d), frame=cost_cents, field=cost_cents)", pcount)))
 	if err != nil {
 		log.Println(errors.Wrap(err, "sum query for passenger"))
 	}

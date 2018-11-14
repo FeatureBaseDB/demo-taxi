@@ -47,7 +47,7 @@ function hist1D(d, xkey, selector) {
         .attr("x", width)
         .attr("y", -6)
         .attr("text-anchor", "end")
-        .text("Bitmap ID");
+        .text("Row");
 
     // Add a y-axis with label.
     svg.append("g")

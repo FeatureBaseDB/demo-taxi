@@ -1,6 +1,6 @@
-var frame_controls = [
+var field_controls = [
     {
-        frame: "cab_type",
+        field: "cab_type",
         group: "nyc-opendata",
         name: "Cab type",
         row_map: {
@@ -9,7 +9,7 @@ var frame_controls = [
         }
     },
     {
-        frame: "passenger_count",
+        field: "passenger_count",
         group: "nyc-opendata",
         name: "Passenger count",
         row_seq: {
@@ -18,7 +18,7 @@ var frame_controls = [
         }
     },
     {
-        frame: "pickup_year",
+        field: "pickup_year",
         group: "nyc-opendata",
         name: "Year",
         row_seq: {
@@ -27,7 +27,7 @@ var frame_controls = [
         }
     },
     {
-        frame: "pickup_month",
+        field: "pickup_month",
         group: "nyc-opendata",
         name: "Month",
         row_map: {
@@ -46,7 +46,7 @@ var frame_controls = [
         }
     },
     {
-        frame: "pickup_day",
+        field: "pickup_day",
         group: "nyc-opendata",
         name: "Day of week",
         row_map: {
@@ -60,7 +60,7 @@ var frame_controls = [
         }
     },
     {
-        frame: "pickup_time",
+        field: "pickup_time",
         group: "nyc-opendata",
         name: "Time (30-min)",
         row_seq: {
@@ -69,7 +69,7 @@ var frame_controls = [
         }
     },
     {
-        frame: "dist_miles",
+        field: "dist_miles",
         group: "nyc-opendata",
         name: "Distance (mi)",
         row_seq: {
@@ -79,7 +79,7 @@ var frame_controls = [
         suffix: " mi"
     },
     {
-        frame: "total_amount_dollars",
+        field: "total_amount_dollars",
         group: "nyc-opendata",
         name: "Total fare ($)",
         row_seq: {
@@ -94,7 +94,7 @@ var frame_controls = [
         text: "NYC OpenData"
     },
     {
-        frame: "duration_minutes",
+        field: "duration_minutes",
         group: "pdk-computed",
         name: "Duration (min)",
         row_seq: {
@@ -104,7 +104,7 @@ var frame_controls = [
         suffix: " min"
     },
     {
-        frame: "speed_mph",
+        field: "speed_mph",
         group: "pdk-computed",
         name: "Speed (mph)",
         row_seq: {
@@ -118,7 +118,7 @@ var frame_controls = [
         text: "PDK"
     },
     {
-        frame: "weather_condition",
+        field: "weather_condition",
         group: "weather",
         name: "Condition",
         row_map: {
@@ -146,7 +146,7 @@ var frame_controls = [
         }
     },
     {
-        frame: "temp_f",
+        field: "temp_f",
         group: "weather",
         name: "Temperature (°F)",
         row_seq: {
@@ -161,7 +161,7 @@ var frame_controls = [
         suffix: "°F"
     },
     {
-        frame: "precipitation_inches",
+        field: "precipitation_inches",
         group: "weather",
         name: "Precip. (in)",
         row_seq: {
@@ -176,7 +176,7 @@ var frame_controls = [
     },
     // precipitation_type: 0,
     {
-        frame: "pressure_i",
+        field: "pressure_i",
         group: "weather",
         name: "Pressure (inHg)",
         row_seq: {
@@ -190,7 +190,7 @@ var frame_controls = [
         suffix: " inHg"
     },
     {
-        frame: "humidity",
+        field: "humidity",
         group: "weather",
         name: "Humidity",
         row_seq: {
@@ -203,7 +203,7 @@ var frame_controls = [
         text: "Wunderground"
     },
     {
-        frame: "pickup_elevation",
+        field: "pickup_elevation",
         group: "google-maps",
         name: "Pickup elevation (ft)",
         row_seq: {
@@ -216,7 +216,7 @@ var frame_controls = [
         }
     },
     {
-        frame: "drop_elevation",
+        field: "drop_elevation",
         group: "google-maps",
         name: "Dropoff elevation (ft)",
         row_seq: {
