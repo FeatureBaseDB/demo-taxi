@@ -35,10 +35,10 @@ $("#topn").bind('submit', function(event) {
         $("#topn-result-latency").text(data['seconds'].toString().substring(0,5) + ' sec');
         $("#topn-result-total").text(addCommas(data['numProfiles']) + ' total rides');
 
-        var table = $('<table class="table"><thead><tr><th>Bitmap ID</th><th>Count</th></tr></thead></table>');
+        var table = $('<table class="table"><thead><tr><th>Row ID</th><th>Count</th></tr></thead></table>');
         var tbody = $('<tbody></tbody>');
         $.each(data['rows'], function(index, obj) {
-            tbody.append('<tr><td>' + obj.bitmapID + '</td><td>' + obj.count + '</td></tr>')
+            tbody.append('<tr><td>' + obj.rowID + '</td><td>' + obj.count + '</td></tr>')
         });
         table.append(tbody);
         $("#topn-result-table").html(table);
@@ -190,12 +190,12 @@ function populate_intersect_form() {
     width = 3;
     colID = 0;
     row = $('<div class="form-group row">');
-    for (var n=0; n<frame_controls.length; n++) {
+    for (var n=0; n<field_controls.length; n++) {
         /*
           create something like this:
           <div class="col-sm-4">
             <label for="cab_type" class="col-form-label">Cab type</label>
-            <select name="cab_type" form="intersectForm" class="intersect-frame form-control" id="cab_type" onchange="$(this.form).trigger('submit')" multiple="multiple">
+            <select name="cab_type" form="intersectForm" class="intersect-field form-control" id="cab_type" onchange="$(this.form).trigger('submit')" multiple="multiple">
               <option></option>
               <option value="0">Green</option>
               <option value="1">Yellow</option>
@@ -204,12 +204,12 @@ function populate_intersect_form() {
         */
 
         appendHR = false;
-        if("row_seq" in frame_controls[n]) {
-            cell = create_cell_from_sequence(frame_controls[n]);
-        } else if ("row_map" in frame_controls[n]) {
-            cell = create_cell_from_map(frame_controls[n]);
-        } else if ("logo" in frame_controls[n]) {
-            cell = create_image(frame_controls[n]);
+        if("row_seq" in field_controls[n]) {
+            cell = create_cell_from_sequence(field_controls[n]);
+        } else if ("row_map" in field_controls[n]) {
+            cell = create_cell_from_map(field_controls[n]);
+        } else if ("logo" in field_controls[n]) {
+            cell = create_image(field_controls[n]);
             appendHR = true;
         }
         row.append(cell);
@@ -231,7 +231,7 @@ function populate_intersect_form() {
     }
 }
 
-function create_image(frame_control) {
+function create_image(field_control) {
     /*
       {
         logo: "/assets/nyc-opendata-logo.png",
@@ -240,17 +240,17 @@ function create_image(frame_control) {
     */
     div = $('<div class="col-sm-4">');
     $("<img>")
-        .attr("src", frame_control["logo"])
+        .attr("src", field_control["logo"])
         .attr("class", "data-logo")
         .appendTo(div);
 
     return div;
 }
 
-function create_cell_from_map(frame_control) {
+function create_cell_from_map(field_control) {
     /*
     {
-        frame: "pickup_day",
+        field: "pickup_day",
         group: "nyc-opendata",
         name: "Pickup weekday",
         row_map: {
@@ -267,32 +267,32 @@ function create_cell_from_map(frame_control) {
 
     div = $('<div class="col-sm-4">');
     label = $("<label>")
-        .attr("for", frame_control["frame"])
+        .attr("for", field_control["field"])
         .attr("class", "col-form-label")
-        .html(frame_control["name"])
+        .html(field_control["name"])
         .appendTo(div);
     sel = $("<select>")
-        .attr("name", frame_control["frame"])
+        .attr("name", field_control["field"])
         .attr("form", "intersectForm")
-        .attr("class", "intersect-frame form-control")
-        .attr("id", frame_control["frame"])
+        .attr("class", "intersect-field form-control")
+        .attr("id", field_control["field"])
         .attr("onchange", "$(this.form).trigger('submit')")
         .attr("multiple", "multiple")
         .appendTo(div);
 
     sel.append($("<option>"));
-    for(k in frame_control['row_map']) {
-        //console.log(k, frame_control['row_map'][k]);
-        sel.append($("<option>", {value: k, text: frame_control['row_map'][k]}));
+    for(k in field_control['row_map']) {
+        //console.log(k, field_control['row_map'][k]);
+        sel.append($("<option>", {value: k, text: field_control['row_map'][k]}));
     }
     return div;
 }
 
-function create_cell_from_sequence(frame_control) {
+function create_cell_from_sequence(field_control) {
     /*
-      frame_controls looks like this:
+      field_controls looks like this:
       {
-        frame: "temp_f",
+        field: "temp_f",
         group: "weather",
         name: "Temperature",
         row_seq: {
@@ -309,30 +309,30 @@ function create_cell_from_sequence(frame_control) {
     */
     div = $('<div class="col-sm-4">');
     label = $("<label>")
-        .attr("for", frame_control["frame"])
+        .attr("for", field_control["field"])
         .attr("class", "col-form-label")
-        .html(frame_control["name"])
+        .html(field_control["name"])
         .appendTo(div);
     sel = $("<select>")
-        .attr("name", frame_control["frame"])
+        .attr("name", field_control["field"])
         .attr("form", "intersectForm")
-        .attr("class", "intersect-frame form-control")
-        .attr("id", frame_control["frame"])
+        .attr("class", "intersect-field form-control")
+        .attr("id", field_control["field"])
         .attr("onchange", "$(this.form).trigger('submit')")
         .attr("multiple", "multiple")
         .appendTo(div);
 
-    row_min = frame_control['row_seq']['min'];
-    row_max = frame_control['row_seq']['max'];
+    row_min = field_control['row_seq']['min'];
+    row_max = field_control['row_seq']['max'];
     row_step = 1;
-    if("step" in frame_control['row_seq']) {
-        row_step = frame_control['row_seq']['step'];
+    if("step" in field_control['row_seq']) {
+        row_step = field_control['row_seq']['step'];
     }
     num_elements = (row_max - row_min) / row_step + 1;
 
-    if('val_seq' in frame_control) {
-        val_min = frame_control['val_seq']['min'];
-        val_max = frame_control['val_seq']['max'];
+    if('val_seq' in field_control) {
+        val_min = field_control['val_seq']['min'];
+        val_max = field_control['val_seq']['max'];
     } else {
         val_min = row_min;
         val_max = row_max;
@@ -354,19 +354,19 @@ function create_cell_from_sequence(frame_control) {
 
 function populate_topn_form() {
     console.log("populate_topn_form");
-    el = $('#frame');
+    el = $('#field');
     console.log(el);
-    for (n=0; n<frame_controls.length; n++) {
-        if ("frame" in frame_controls[n]) {
-            el.append('<option value="' + frame_controls[n]['frame']+ '">' + frame_controls[n]['name'] + '</option>');
-            console.log(frame_controls[n]['frame']);
-        } else if ("logo" in frame_controls[n]) {
+    for (n=0; n<field_controls.length; n++) {
+        if ("field" in field_controls[n]) {
+            el.append('<option value="' + field_controls[n]['field']+ '">' + field_controls[n]['name'] + '</option>');
+            console.log(field_controls[n]['field']);
+        } else if ("logo" in field_controls[n]) {
             el.append('<option disabled="disabled">----</option>');
         }
     }
 }
 
-var frames = {
+var fields = {
     cab_type: 0,
     pickup_year: 0,
     pickup_month: 0,
@@ -391,9 +391,9 @@ var frames = {
 function makeIntersectQuery() {
     indent = "  "
     var toIntersect = [];
-    var frame_els = $(".intersect-frame")  // TODO should be able to use this instead of frames dict
-    for (var frame in frames) {
-        el = $("#" + frame);
+    var field_els = $(".intersect-field")  // TODO should be able to use this instead of fields dict
+    for (var field in fields) {
+        el = $("#" + field);
         var val = el.val();
         if (!val) {
             continue;
@@ -403,7 +403,7 @@ function makeIntersectQuery() {
             if (!val[i]) {
                 continue;
             }            
-            toUnion.push(indent + "Bitmap(frame='" + frame + "',rowID=" + val[i] + ")");
+            toUnion.push(indent + "Row(" + field + "=" + val[i] + ")");
         }
         if (toUnion.length == 1) {
             toIntersect.push(toUnion[0]);

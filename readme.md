@@ -11,7 +11,7 @@ Use the Pilosa Dev Kit to import the taxi data: https://github.com/pilosa/pdk
 
 `go get -u github.com/rakyll/statik`
 
-`glide install && go install github.com/rakyll/statik`
+`dep ensure && go install github.com/rakyll/statik`
 
 `go generate && go build . && ./demo-taxi`
 
