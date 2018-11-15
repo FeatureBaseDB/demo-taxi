@@ -688,13 +688,6 @@ func (s *Server) HandleQuery(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) HandleJoin(w http.ResponseWriter, r *http.Request) {
-	defer func() {
-		fmt.Println()
-		fmt.Println()
-		fmt.Println()
-	}()
-	fmt.Println("handleJoin")
-	fmt.Println(r)
 	jr := &joinRequest{}
 	jr.UserQuery = r.FormValue("user_query")
 	jr.RideQuery = r.FormValue("ride_query")
@@ -710,11 +703,10 @@ func (s *Server) HandleJoin(w http.ResponseWriter, r *http.Request) {
 	}
 	userIDs := resp.Result().Row().Columns
 	fmt.Println("Count userIDs ", len(userIDs))
-	fmt.Println("10 userIDs: ", userIDs[:10])
 	userEventQuery := s.genJoin(userIDs)
-	log.Printf("user event query len: %d, first: %s", len(userEventQuery), userEventQuery[:300])
+	log.Printf("user event query len: %d, first: %s\n\n", len(userEventQuery), userEventQuery[:300])
 	fullQuery := "Count(Intersect(" + userEventQuery + ", " + jr.RideQuery + "))"
-	log.Printf("full   query len: %d, first: %s\nlast: %s", len(fullQuery), fullQuery[:300], fullQuery[len(fullQuery)-300:])
+	log.Printf("full query len: %d, first: %s\nlast: %s", len(fullQuery), fullQuery[:300], fullQuery[len(fullQuery)-300:])
 	resp, err = s.Client.Query(s.Index.RawQuery(fullQuery))
 	if err != nil {
 		log.Printf("ERROR QUERYING rides: %v", err.Error())
@@ -729,6 +721,10 @@ func (s *Server) HandleJoin(w http.ResponseWriter, r *http.Request) {
 		Seconds:  dif.Seconds(),
 		NumRides: s.getRideCount(),
 	}
+	if len(userIDs) == 0 {
+		mresp.Rows[0].Count = 0
+	}
+
 	enc := json.NewEncoder(w)
 	err = enc.Encode(&mresp)
 	if err != nil {
