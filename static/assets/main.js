@@ -1,6 +1,6 @@
 $("#intersectForm").bind('submit', function(event) {
     event.preventDefault();
-    var query = makeIntersectQuery();
+    var query = makeIntersectTabQuery();
     if (!query) {
         console.log("No query.");
         return
@@ -459,15 +459,36 @@ var ride_fields = {
     humidity: 0,
     pickup_elevation: 0,
     drop_elevation: 0,
+};
+
+var user_fields = {
+    "age": 0,
+    "title": 0,
+    "allergies": 0
+};
+
+function makeIntersectTabQuery() {
+    return "Count(" + getIntersectQuery("intersect", ride_fields, "  ", "\n") + ")";
 }
 
+function makeJoinTabRequest() {
+    return {
+        "user_query": getIntersectQuery("join", user_fields, "", ""),
+        "ride_query": getIntersectQuery("join", ride_fields, "", ""),
+    };
+}
 
-function makeIntersectQuery() {
-    indent = "  "
+function makeJoinTabDisp() {
+    return {
+        "user_query": getIntersectQuery("join", user_fields, "  ", "\n"),
+        "ride_query": getIntersectQuery("join", ride_fields, "  ", "\n"),
+    };
+}
+
+function getIntersectQuery(tab, fields, indent, newline) {
     var toIntersect = [];
-    var field_els = $(".intersect-field")  // TODO should be able to use this instead of fields dict
     for (var field in fields) {
-        el = $("#" + field);
+        el = $("#" + tab + "-" + field);
         var val = el.val();
         if (!val) {
             continue;
@@ -476,19 +497,21 @@ function makeIntersectQuery() {
         for (var i = 0; i < val.length; i++) {
             if (!val[i]) {
                 continue;
-            }            
+            }
             toUnion.push(indent + "Row(" + field + "=" + val[i] + ")");
         }
         if (toUnion.length == 1) {
             toIntersect.push(toUnion[0]);
         }
         else if (toUnion.length > 1) {
-            toIntersect.push(indent + "Union(\n" + indent+ toUnion.join(",\n" + indent) + "\n" + indent + ")");
+            toIntersect.push(indent + "Union(" + newline + indent + toUnion.join("," + newline + indent) + newline + indent + ")");
         }
-        
+
     }
+    q = "";
     if (toIntersect.length > 0) {
-        return "Count(Intersect(\n" + toIntersect.join(", \n") + "\n))";
+        q = "Intersect(" + newline + toIntersect.join(", " + newline) + newline + ")";
     }
-    return "";
+    return q;
+
 }
