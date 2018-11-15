@@ -690,14 +690,9 @@ func (s *Server) HandleQuery(w http.ResponseWriter, r *http.Request) {
 func (s *Server) HandleJoin(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("handleJoin")
 	fmt.Println(r)
-
-	dec := json.NewDecoder(r.Body)
 	jr := &joinRequest{}
-	err := dec.Decode(jr)
-	if err != nil {
-		http.Error(w, "decoding request", 400)
-		return
-	}
+	jr.UserQuery = r.FormValue("user_query")
+	jr.RideQuery = r.FormValue("ride_query")
 
 	start := time.Now()
 	resp, err := s.Client.Query(s.UsersIndex.RawQuery(jr.UserQuery))
@@ -729,6 +724,9 @@ func (s *Server) HandleJoin(w http.ResponseWriter, r *http.Request) {
 func (s *Server) genJoin(userIDs []uint64) string {
 	b := strings.Builder{}
 	b.WriteString("Union(")
+	if len(userIDs) == 0 {
+		return ""
+	}
 	for _, uid := range userIDs[:len(userIDs)-1] {
 		b.WriteString(fmt.Sprintf("Row(user_id=%d),", uid))
 	}
