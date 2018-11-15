@@ -16,7 +16,7 @@ $("#intersectForm").bind('submit', function(event) {
         $("#intersect-result-query").html(query);
         $("#intersect-result-latency").text(data['seconds'].toString().substring(0,5) + ' sec');
         $("#intersect-result-count").text(addCommas(data['rows'][0].count) + ' rides');
-        $("#intersect-result-total").text(addCommas(data['numProfiles']) + ' total rides');
+        $("#intersect-result-total").text(addCommas(data['numRides']) + ' total rides');
     });
 });
 
@@ -42,11 +42,12 @@ $("#joinForm").bind('submit', function(event) {
                 $('#joinResultsPlaceholder').hide();
                 $('#joinResults').show();
             }
+            console.log(data)
             $("#join-result-user-query").html(req_disp["user_query"]);
             $("#join-result-ride-query").html(req_disp["ride_query"]);
             $("#join-result-latency").text(data['seconds'].toString().substring(0,5) + ' sec');
             //$("#join-result-count").text(addCommas(data['rows'][0].count) + ' rides');
-            //$("#join-result-total").text(addCommas(data['numProfiles']) + ' total rides');
+            //$("#join-result-total").text(addCommas(data['numRides']) + ' total rides');
         },
     });
 });
@@ -65,7 +66,7 @@ $("#topn").bind('submit', function(event) {
         }
         $("#topn-result-query").text(data['query']);
         $("#topn-result-latency").text(data['seconds'].toString().substring(0,5) + ' sec');
-        $("#topn-result-total").text(addCommas(data['numProfiles']) + ' total rides');
+        $("#topn-result-total").text(addCommas(data['numRides']) + ' total rides');
 
         var table = $('<table class="table"><thead><tr><th>Row ID</th><th>Count</th></tr></thead></table>');
         var tbody = $('<tbody></tbody>');
@@ -114,7 +115,7 @@ function predefined(url, data) {
         }
         $("#predefined-result-description").text(data['description']);
         $("#predefined-result-latency").text(data['seconds'].toString().substring(0,5) + ' sec');
-        $("#predefined-result-total").text(addCommas(data['numProfiles']) + ' total rides');
+        $("#predefined-result-total").text(addCommas(data['numRides']) + ' total rides');
 
         var header = [];
         var table = $('<table class="table"></table>');

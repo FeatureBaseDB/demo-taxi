@@ -203,7 +203,7 @@ func (s *Server) HandleStatic(w http.ResponseWriter, r *http.Request) {
 type intersectResponse struct {
 	Rows     []intersectRow `json:"rows"`
 	Seconds  float64        `json:"seconds"`
-	NumRides uint64         `json:"numProfiles"`
+	NumRides uint64         `json:"numRides"`
 }
 
 type intersectRow struct {
@@ -269,7 +269,7 @@ func (s *Server) HandleTopN(w http.ResponseWriter, r *http.Request) {
 }
 
 type topNGridResponse struct {
-	NumRides    uint64        `json:"numProfiles"`
+	NumRides    uint64        `json:"numRides"`
 	Description string        `json:"description"`
 	Seconds     float64       `json:"seconds"`
 	Rows        []topNGridRow `json:"rows"`
@@ -286,7 +286,7 @@ type topnResponse struct {
 	Rows     []topnRow `json:"rows"`
 	Query    string    `json:"query"`
 	Seconds  float64   `json:"seconds"`
-	NumRides uint64    `json:"numProfiles"`
+	NumRides uint64    `json:"numRides"`
 }
 
 type topnRow struct {
@@ -326,7 +326,7 @@ type predefined1Response struct {
 	Rows        []predefined1Row `json:"rows"`
 	Description string           `json:"description"`
 	Seconds     float64          `json:"seconds"`
-	NumRides    uint64           `json:"numProfiles"`
+	NumRides    uint64           `json:"numRides"`
 }
 
 type predefined1Row struct {
@@ -365,7 +365,7 @@ type predefined2Response struct {
 	Rows        []predefined2Row `json:"rows"`
 	Description string           `json:"description"`
 	Seconds     float64          `json:"seconds"`
-	NumRides    uint64           `json:"numProfiles"`
+	NumRides    uint64           `json:"numRides"`
 }
 
 type predefined2Row struct {
@@ -492,7 +492,7 @@ func (s *Server) pcountTopNPerYear(year int, rows chan predefined3Row, wg *sync.
 }
 
 type predefined3Response struct {
-	NumRides    uint64           `json:"numProfiles"`
+	NumRides    uint64           `json:"numRides"`
 	Description string           `json:"description"`
 	Seconds     float64          `json:"seconds"`
 	Rows        []predefined3Row `json:"rows"`
@@ -572,7 +572,7 @@ func (s *Server) distTopNPerYearPcount(keys <-chan predefined4Row, rows chan<- p
 }
 
 type predefined4Response struct {
-	NumRides    uint64           `json:"numProfiles"`
+	NumRides    uint64           `json:"numRides"`
 	Description string           `json:"description"`
 	Seconds     float64          `json:"seconds"`
 	Rows        []predefined4Row `json:"rows"`
@@ -647,7 +647,7 @@ func (s *Server) HandlePredefined5(w http.ResponseWriter, r *http.Request) {
 }
 
 type predefined5Response struct {
-	NumRides    uint64           `json:"numProfiles"`
+	NumRides    uint64           `json:"numRides"`
 	Description string           `json:"description"`
 	Seconds     float64          `json:"seconds"`
 	Rows        []predefined5Row `json:"rows"`
