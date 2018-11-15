@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -40,12 +41,13 @@ func main() {
 }
 
 type Server struct {
-	Address  string
-	Router   *mux.Router
-	Client   *pilosa.Client
-	Index    *pilosa.Index
-	Fields   map[string]*pilosa.Field
-	NumRides uint64
+	Address    string
+	Router     *mux.Router
+	Client     *pilosa.Client
+	Index      *pilosa.Index
+	UsersIndex *pilosa.Index
+	Fields     map[string]*pilosa.Field
+	NumRides   uint64
 }
 
 func NewServer(pilosaAddr string) (*Server, error) {
@@ -77,9 +79,6 @@ func NewServer(pilosaAddr string) (*Server, error) {
 		return nil, errors.Wrap(err, "getting client")
 	}
 	index := pilosa.NewIndex(indexName)
-	if err != nil {
-		return nil, fmt.Errorf("pilosa.NewIndex: %v", err)
-	}
 	err = client.EnsureIndex(index)
 	if err != nil {
 		return nil, fmt.Errorf("client.EnsureIndex: %v", err)
@@ -128,9 +127,12 @@ func NewServer(pilosaAddr string) (*Server, error) {
 		server.Fields[fieldName] = field
 	}
 
+	usersIndex := pilosa.NewIndex("users")
+
 	server.Router = router
 	server.Client = client
 	server.Index = index
+	server.UsersIndex = usersIndex
 	server.NumRides = server.getRideCount()
 	return server, nil
 }
@@ -165,7 +167,7 @@ func (s *Server) getPilosaVersion() string {
 }
 
 func (s *Server) testQuery() error {
-	// Send a Row query. PilosaException is thrown if execution of the query fails.
+	// Send a Row query. PilosaException is returned if execution of the query fails.
 	response, err := s.Client.Query(s.Fields["pickup_year"].Row(2013), nil)
 	if err != nil {
 		return fmt.Errorf("s.Client.Query: %v", err)
@@ -182,7 +184,7 @@ func (s *Server) testQuery() error {
 }
 
 func (s *Server) Serve() {
-	fmt.Println("running at http://127.0.0.1:8000")
+	fmt.Println("running at http://0.0.0.0:8000")
 	log.Fatal(http.ListenAndServe(":8000", s.Router))
 }
 
@@ -213,35 +215,6 @@ var maxIDMap map[string]uint64 = map[string]uint64{
 	"duration_minutes":     100,
 	"dist_miles":           40,
 	"total_amount_dollars": 100,
-}
-
-type joinRow struct {
-	Count uint64 `json:"count"`
-}
-
-type joinResponse struct {
-	Rows        []joinRow `json:"rows"`
-	Seconds     float64   `json:"seconds"`
-	NumRides    uint64    `json:"numProfiles"`
-	Description string    `json:"description"`
-}
-
-func (s *Server) HandleJoin(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("handleJoin")
-	fmt.Println(r)
-	start := time.Now()
-
-	dif := time.Since(start)
-
-	resp := joinResponse{}
-	resp.NumRides = s.getRideCount()
-	resp.Description = "something joiny"
-	resp.Seconds = float64(dif.Seconds())
-	enc := json.NewEncoder(w)
-	err := enc.Encode(resp)
-	if err != nil {
-		log.Printf("writing results: %v to responsewriter: %v", resp, err)
-	}
 }
 
 func (s *Server) HandleTopN(w http.ResponseWriter, r *http.Request) {
@@ -712,4 +685,58 @@ func (s *Server) HandleQuery(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("writing results: %v to responsewriter: %v", resp, err)
 	}
+}
+
+func (s *Server) HandleJoin(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("handleJoin")
+	fmt.Println(r)
+
+	dec := json.NewDecoder(r.Body)
+	jr := &joinRequest{}
+	err := dec.Decode(jr)
+	if err != nil {
+		http.Error(w, "decoding request", 400)
+		return
+	}
+
+	start := time.Now()
+	resp, err := s.Client.Query(s.UsersIndex.RawQuery(jr.UserQuery))
+	if err != nil {
+		http.Error(w, "querying pilosa users: "+err.Error(), 500)
+		return
+	}
+	userIDs := resp.Result().Row().Columns
+	userEventQuery := s.genJoin(userIDs)
+	fullQuery := "Intersect(" + userEventQuery + ", " + jr.RideQuery + ")"
+	resp, err = s.Client.Query(s.Index.RawQuery(fullQuery))
+	if err != nil {
+		http.Error(w, "querying pilosa - fullquery: "+err.Error(), 500)
+	}
+	dif := time.Since(start)
+
+	mresp := intersectResponse{
+		Rows:     []intersectRow{{Count: uint64(resp.Result().Count())}},
+		Seconds:  dif.Seconds(),
+		NumRides: s.getRideCount(),
+	}
+	enc := json.NewEncoder(w)
+	err = enc.Encode(&mresp)
+	if err != nil {
+		http.Error(w, "encoding response: "+err.Error(), 500)
+	}
+}
+
+func (s *Server) genJoin(userIDs []uint64) string {
+	b := strings.Builder{}
+	b.WriteString("Union(")
+	for _, uid := range userIDs[:len(userIDs)-1] {
+		b.WriteString(fmt.Sprintf("Row(user_id=%d),", uid))
+	}
+	b.WriteString(fmt.Sprintf("Row(user_id=%d)", userIDs[len(userIDs)-1]))
+	return b.String()
+}
+
+type joinRequest struct {
+	UserQuery string `json:"user_query"`
+	RideQuery string `json:"ride_query"`
 }
