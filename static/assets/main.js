@@ -495,8 +495,8 @@ var ride_fields = {
 
 var user_fields = {
     "age": 0,
-    "title": 0,
-    "allergies": 0
+    "title": 1,
+    "allergies": 2
 };
 
 function makeIntersectTabQuery() {
@@ -530,7 +530,13 @@ function getIntersectQuery(tab, fields, indent, newline) {
             if (!val[i]) {
                 continue;
             }
-            toUnion.push(indent + "Row(" + field + "=" + val[i] + ")");
+            if(field == "title" || field == "allergies") {
+                id = user_fields[field]
+                q = "Row(" + field + "=" + user_field_controls[id]["row_map"][val[i]] + ")"
+            } else {
+                q = "Row(" + field + "=" + val[i] + ")"
+            }
+            toUnion.push(indent + q);
         }
         if (toUnion.length == 1) {
             toIntersect.push(toUnion[0]);
