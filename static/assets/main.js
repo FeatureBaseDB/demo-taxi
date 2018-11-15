@@ -533,7 +533,7 @@ function getIntersectQuery(tab, fields, indent, newline) {
             }
             if(field == "title" || field == "allergies") {
                 id = user_fields[field]
-                q = "Row(" + field + "=" + user_field_controls[id]["row_map"][val[i]] + ")"
+                q = "Row(" + field + "='" + user_field_controls[id]["row_map"][val[i]] + "')"
             } else {
                 q = "Row(" + field + "=" + val[i] + ")"
             }
