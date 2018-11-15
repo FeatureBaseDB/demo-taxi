@@ -688,26 +688,41 @@ func (s *Server) HandleQuery(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) HandleJoin(w http.ResponseWriter, r *http.Request) {
+	defer func() {
+		fmt.Println()
+		fmt.Println()
+		fmt.Println()
+	}()
 	fmt.Println("handleJoin")
 	fmt.Println(r)
 	jr := &joinRequest{}
 	jr.UserQuery = r.FormValue("user_query")
 	jr.RideQuery = r.FormValue("ride_query")
 
+	fmt.Printf("userQ: '%s'\nrideQ: '%s'\n", jr.UserQuery, jr.RideQuery)
+
 	start := time.Now()
 	resp, err := s.Client.Query(s.UsersIndex.RawQuery(jr.UserQuery))
 	if err != nil {
+		log.Printf("ERROR QUERYING USERS: %v", err.Error())
 		http.Error(w, "querying pilosa users: "+err.Error(), 500)
 		return
 	}
 	userIDs := resp.Result().Row().Columns
+	fmt.Println("Count userIDs ", len(userIDs))
+	fmt.Println("10 userIDs: ", userIDs[:10])
 	userEventQuery := s.genJoin(userIDs)
-	fullQuery := "Intersect(" + userEventQuery + ", " + jr.RideQuery + ")"
+	log.Printf("user event query len: %d, first: %s", len(userEventQuery), userEventQuery[:300])
+	fullQuery := "Count(Intersect(" + userEventQuery + ", " + jr.RideQuery + "))"
+	log.Printf("full   query len: %d, first: %s\nlast: %s", len(fullQuery), fullQuery[:300], fullQuery[len(fullQuery)-300:])
 	resp, err = s.Client.Query(s.Index.RawQuery(fullQuery))
 	if err != nil {
+		log.Printf("ERROR QUERYING rides: %v", err.Error())
 		http.Error(w, "querying pilosa - fullquery: "+err.Error(), 500)
+		return
 	}
 	dif := time.Since(start)
+	fmt.Println("RESP: ", resp)
 
 	mresp := intersectResponse{
 		Rows:     []intersectRow{{Count: uint64(resp.Result().Count())}},
@@ -730,7 +745,7 @@ func (s *Server) genJoin(userIDs []uint64) string {
 	for _, uid := range userIDs[:len(userIDs)-1] {
 		b.WriteString(fmt.Sprintf("Row(user_id=%d),", uid))
 	}
-	b.WriteString(fmt.Sprintf("Row(user_id=%d)", userIDs[len(userIDs)-1]))
+	b.WriteString(fmt.Sprintf("Row(user_id=%d))", userIDs[len(userIDs)-1]))
 	return b.String()
 }
 
