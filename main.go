@@ -24,7 +24,7 @@ import (
 const defaultHost = "http://localhost:10101"
 const indexName = "taxi"
 
-var Version = "v0.0.0" // demo version
+var Version = "v0.4.0" // demo version
 
 func main() {
 	pilosaAddr := pflag.String("pilosa", defaultHost, "host:port for pilosa")
