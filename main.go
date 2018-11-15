@@ -24,7 +24,7 @@ import (
 const defaultHost = "http://localhost:10101"
 const indexName = "taxi"
 
-var Version = "v0.0.0" // demo version
+var Version = "v0.4.0" // demo version
 
 func main() {
 	pilosaAddr := pflag.String("pilosa", defaultHost, "host:port for pilosa")
@@ -59,6 +59,7 @@ func NewServer(pilosaAddr string) (*Server, error) {
 	router.HandleFunc("/assets/{file}", server.HandleStatic).Methods("GET")
 	router.HandleFunc("/version", server.HandleVersion).Methods("GET")
 	router.HandleFunc("/query/topn", server.HandleTopN).Methods("GET")
+	router.HandleFunc("/query/join", server.HandleJoin).Methods("POST")
 	router.HandleFunc("/predefined/1", server.HandlePredefined1).Methods("GET")
 	router.HandleFunc("/predefined/2", server.HandlePredefined2).Methods("GET")
 	router.HandleFunc("/predefinedalt/2", server.HandlePredefinedAlt2).Methods("GET")
@@ -212,6 +213,35 @@ var maxIDMap map[string]uint64 = map[string]uint64{
 	"duration_minutes":     100,
 	"dist_miles":           40,
 	"total_amount_dollars": 100,
+}
+
+type joinRow struct {
+	Count uint64 `json:"count"`
+}
+
+type joinResponse struct {
+	Rows        []joinRow `json:"rows"`
+	Seconds     float64   `json:"seconds"`
+	NumRides    uint64    `json:"numProfiles"`
+	Description string    `json:"description"`
+}
+
+func (s *Server) HandleJoin(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("handleJoin")
+	fmt.Println(r)
+	start := time.Now()
+
+	dif := time.Since(start)
+
+	resp := joinResponse{}
+	resp.NumRides = s.getRideCount()
+	resp.Description = "something joiny"
+	resp.Seconds = float64(dif.Seconds())
+	enc := json.NewEncoder(w)
+	err := enc.Encode(resp)
+	if err != nil {
+		log.Printf("writing results: %v to responsewriter: %v", resp, err)
+	}
 }
 
 func (s *Server) HandleTopN(w http.ResponseWriter, r *http.Request) {

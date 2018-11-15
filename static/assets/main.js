@@ -1,6 +1,6 @@
 $("#intersectForm").bind('submit', function(event) {
     event.preventDefault();
-    var query = makeIntersectQuery();
+    var query = makeIntersectTabQuery();
     if (!query) {
         console.log("No query.");
         return
@@ -19,6 +19,38 @@ $("#intersectForm").bind('submit', function(event) {
         $("#intersect-result-total").text(addCommas(data['numProfiles']) + ' total rides');
     });
 });
+
+$("#joinForm").bind('submit', function(event) {
+    event.preventDefault();
+    var req = makeJoinTabRequest();
+    var req_disp = makeJoinTabDisp();
+    if (!req["user_query"] || !req["ride_query"]) {
+        console.log("Incomplete request.");
+        return
+    }
+    console.log(req);
+    $.ajax({
+        url: "query/join",
+        type: 'post',
+        dataType: 'json',
+        data: req,
+        success: function(data) {
+            if (data.error) {
+                console.log("QError", data.error);
+                $('#joinResults').hide();
+            } else {
+                $('#joinResultsPlaceholder').hide();
+                $('#joinResults').show();
+            }
+            $("#join-result-user-query").html(req_disp["user_query"]);
+            $("#join-result-ride-query").html(req_disp["ride_query"]);
+            $("#join-result-latency").text(data['seconds'].toString().substring(0,5) + ' sec');
+            //$("#join-result-count").text(addCommas(data['rows'][0].count) + ' rides');
+            //$("#join-result-total").text(addCommas(data['numProfiles']) + ' total rides');
+        },
+    });
+});
+
 
 $("#topn").bind('submit', function(event) {
     event.preventDefault();
@@ -169,6 +201,7 @@ function addCommas(intNum) {
 function startup() {
     populate_version();
     populate_intersect_form();
+    populate_join_form();
     populate_topn_form();
 }
 
@@ -184,13 +217,86 @@ function populate_version() {
     xhr.send(null)
 }
 
+function populate_join_form() {
+    tab = "join";
+    el = $("#join-form-col");
+    console.log(el);
+    console.log("populate join");
+    width = 3;
+    colID = 0;
+    row = $('<div class="form-group row">');
+    el.append("<div class='index-label'>User Index</div>")
+    for (var n=0; n<user_field_controls.length; n++) {
+        appendHR = false;
+        if("row_seq" in user_field_controls[n]) {
+            cell = create_cell_from_sequence(user_field_controls[n], tab);
+        } else if ("row_map" in user_field_controls[n]) {
+            cell = create_cell_from_map(user_field_controls[n], tab);
+        } else if ("logo" in user_field_controls[n]) {
+            cell = create_image(user_field_controls[n], tab);
+            appendHR = true;
+        }
+        row.append(cell);
+        colID++;
+
+        if(colID == width) {
+            /*
+              group things into 3 columns in each row
+              <div class="form-group row">
+              </div>
+            */
+            colID = 0;
+            el.append(row);
+            if(appendHR) {
+                el.append('<hr>');
+            }
+            row = $('<div class="form-group row">');
+        }
+
+    }
+
+    el.append('<hr><hr>');
+    el.append("<div class='index-label'>Ride Index</div>")
+
+    for (var n=0; n<ride_field_controls.length; n++) {
+        appendHR = false;
+        if("row_seq" in ride_field_controls[n]) {
+            cell = create_cell_from_sequence(ride_field_controls[n], tab);
+        } else if ("row_map" in ride_field_controls[n]) {
+            cell = create_cell_from_map(ride_field_controls[n], tab);
+        } else if ("logo" in ride_field_controls[n]) {
+            cell = create_image(ride_field_controls[n], tab);
+            appendHR = true;
+        }
+        row.append(cell);
+        colID++;
+
+        if(colID == width) {
+            /*
+            group things into 3 columns in each row
+            <div class="form-group row">
+            </div>
+            */
+            colID = 0;
+            el.append(row);
+            if(appendHR) {
+                el.append('<hr>');
+            }
+            row = $('<div class="form-group row">');
+        }
+    }
+
+
+}
+
 function populate_intersect_form() {
+    tab = "intersect";
     el = $("#intersect-form-col");
     console.log(el);
     width = 3;
     colID = 0;
     row = $('<div class="form-group row">');
-    for (var n=0; n<field_controls.length; n++) {
+    for (var n=0; n<ride_field_controls.length; n++) {
         /*
           create something like this:
           <div class="col-sm-4">
@@ -204,12 +310,12 @@ function populate_intersect_form() {
         */
 
         appendHR = false;
-        if("row_seq" in field_controls[n]) {
-            cell = create_cell_from_sequence(field_controls[n]);
-        } else if ("row_map" in field_controls[n]) {
-            cell = create_cell_from_map(field_controls[n]);
-        } else if ("logo" in field_controls[n]) {
-            cell = create_image(field_controls[n]);
+        if("row_seq" in ride_field_controls[n]) {
+            cell = create_cell_from_sequence(ride_field_controls[n], tab);
+        } else if ("row_map" in ride_field_controls[n]) {
+            cell = create_cell_from_map(ride_field_controls[n], tab);
+        } else if ("logo" in ride_field_controls[n]) {
+            cell = create_image(ride_field_controls[n], tab);
             appendHR = true;
         }
         row.append(cell);
@@ -247,7 +353,7 @@ function create_image(field_control) {
     return div;
 }
 
-function create_cell_from_map(field_control) {
+function create_cell_from_map(field_control, tab) {
     /*
     {
         field: "pickup_day",
@@ -272,10 +378,10 @@ function create_cell_from_map(field_control) {
         .html(field_control["name"])
         .appendTo(div);
     sel = $("<select>")
-        .attr("name", field_control["field"])
-        .attr("form", "intersectForm")
-        .attr("class", "intersect-field form-control")
-        .attr("id", field_control["field"])
+        .attr("name", tab + "-" + field_control["field"])
+        .attr("form", tab + "Form")
+        .attr("class", tab + "-field form-control")
+        .attr("id", tab + "-" + field_control["field"])
         .attr("onchange", "$(this.form).trigger('submit')")
         .attr("multiple", "multiple")
         .appendTo(div);
@@ -288,9 +394,9 @@ function create_cell_from_map(field_control) {
     return div;
 }
 
-function create_cell_from_sequence(field_control) {
+function create_cell_from_sequence(field_control, tab) {
     /*
-      field_controls looks like this:
+      ride_field_controls looks like this:
       {
         field: "temp_f",
         group: "weather",
@@ -314,10 +420,10 @@ function create_cell_from_sequence(field_control) {
         .html(field_control["name"])
         .appendTo(div);
     sel = $("<select>")
-        .attr("name", field_control["field"])
-        .attr("form", "intersectForm")
-        .attr("class", "intersect-field form-control")
-        .attr("id", field_control["field"])
+        .attr("name", tab + "-" + field_control["field"])
+        .attr("form", tab + "Form")
+        .attr("class", tab + "-field form-control")
+        .attr("id", tab + "-" + field_control["field"])
         .attr("onchange", "$(this.form).trigger('submit')")
         .attr("multiple", "multiple")
         .appendTo(div);
@@ -356,17 +462,17 @@ function populate_topn_form() {
     console.log("populate_topn_form");
     el = $('#field');
     console.log(el);
-    for (n=0; n<field_controls.length; n++) {
-        if ("field" in field_controls[n]) {
-            el.append('<option value="' + field_controls[n]['field']+ '">' + field_controls[n]['name'] + '</option>');
-            console.log(field_controls[n]['field']);
-        } else if ("logo" in field_controls[n]) {
+    for (n=0; n<ride_field_controls.length; n++) {
+        if ("field" in ride_field_controls[n]) {
+            el.append('<option value="' + ride_field_controls[n]['field']+ '">' + ride_field_controls[n]['name'] + '</option>');
+            // console.log(ride_field_controls[n]['field']);
+        } else if ("logo" in ride_field_controls[n]) {
             el.append('<option disabled="disabled">----</option>');
         }
     }
 }
 
-var fields = {
+var ride_fields = {
     cab_type: 0,
     pickup_year: 0,
     pickup_month: 0,
@@ -385,15 +491,36 @@ var fields = {
     humidity: 0,
     pickup_elevation: 0,
     drop_elevation: 0,
+};
+
+var user_fields = {
+    "age": 0,
+    "title": 0,
+    "allergies": 0
+};
+
+function makeIntersectTabQuery() {
+    return "Count(" + getIntersectQuery("intersect", ride_fields, "  ", "\n") + ")";
 }
 
+function makeJoinTabRequest() {
+    return {
+        "user_query": getIntersectQuery("join", user_fields, "", ""),
+        "ride_query": getIntersectQuery("join", ride_fields, "", ""),
+    };
+}
 
-function makeIntersectQuery() {
-    indent = "  "
+function makeJoinTabDisp() {
+    return {
+        "user_query": getIntersectQuery("join", user_fields, "  ", "\n"),
+        "ride_query": getIntersectQuery("join", ride_fields, "  ", "\n"),
+    };
+}
+
+function getIntersectQuery(tab, fields, indent, newline) {
     var toIntersect = [];
-    var field_els = $(".intersect-field")  // TODO should be able to use this instead of fields dict
     for (var field in fields) {
-        el = $("#" + field);
+        el = $("#" + tab + "-" + field);
         var val = el.val();
         if (!val) {
             continue;
@@ -402,19 +529,21 @@ function makeIntersectQuery() {
         for (var i = 0; i < val.length; i++) {
             if (!val[i]) {
                 continue;
-            }            
+            }
             toUnion.push(indent + "Row(" + field + "=" + val[i] + ")");
         }
         if (toUnion.length == 1) {
             toIntersect.push(toUnion[0]);
         }
         else if (toUnion.length > 1) {
-            toIntersect.push(indent + "Union(\n" + indent+ toUnion.join(",\n" + indent) + "\n" + indent + ")");
+            toIntersect.push(indent + "Union(" + newline + indent + toUnion.join("," + newline + indent) + newline + indent + ")");
         }
-        
+
     }
+    q = "";
     if (toIntersect.length > 0) {
-        return "Count(Intersect(\n" + toIntersect.join(", \n") + "\n))";
+        q = "Intersect(" + newline + toIntersect.join(", " + newline) + newline + ")";
     }
-    return "";
+    return q;
+
 }
