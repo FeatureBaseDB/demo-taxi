@@ -20,6 +20,38 @@ $("#intersectForm").bind('submit', function(event) {
     });
 });
 
+$("#joinForm").bind('submit', function(event) {
+    event.preventDefault();
+    var req = makeJoinTabRequest();
+    var req_disp = makeJoinTabDisp();
+    if (!req["user_query"] || !req["ride_query"]) {
+        console.log("Incomplete request.");
+        return
+    }
+    console.log(req);
+    $.ajax({
+        url: "query/join",
+        type: 'post',
+        dataType: 'json',
+        data: req,
+        success: function(data) {
+            if (data.error) {
+                console.log("QError", data.error);
+                $('#joinResults').hide();
+            } else {
+                $('#joinResultsPlaceholder').hide();
+                $('#joinResults').show();
+            }
+            $("#join-result-user-query").html(req_disp["user_query"]);
+            $("#join-result-ride-query").html(req_disp["ride_query"]);
+            $("#join-result-latency").text(data['seconds'].toString().substring(0,5) + ' sec');
+            //$("#join-result-count").text(addCommas(data['rows'][0].count) + ' rides');
+            //$("#join-result-total").text(addCommas(data['numProfiles']) + ' total rides');
+        },
+    });
+});
+
+
 $("#topn").bind('submit', function(event) {
     event.preventDefault();
     $('#topnResults').hide()
