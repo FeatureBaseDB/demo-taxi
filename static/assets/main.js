@@ -1,14 +1,22 @@
+var VERBOSITY = 5;
+
+function log(m, v) {
+    if(v <= VERBOSITY) {
+        console.log(m);
+    }
+}
+
 $("#intersectForm").bind('submit', function(event) {
     event.preventDefault();
     var query = makeIntersectTabQuery();
     if (!query) {
-        console.log("No query.");
+        log("No query.", 1);
         return
     }
     console.log("Q", query);
     doAjax('query', query, function(data) {
         if (data.error) {
-            console.log("QError", data.error);
+            log("QError:" + data.error, 1);
             $('#intersectResults').hide();
         } else {
             $('#intersectResults').show();
