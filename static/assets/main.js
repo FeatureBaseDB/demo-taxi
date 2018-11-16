@@ -47,7 +47,8 @@ $("#joinForm").bind('submit', function(event) {
             $("#join-result-ride-query").html(req_disp["ride_query"]);
             $("#join-result-latency").text(data['seconds'].toString().substring(0,5) + ' sec');
             $("#join-result-count").text(addCommas(data['rows'][0].count) + ' rides');
-            $("#join-result-total").text(addCommas(data['numRides']) + ' total rides');
+            $("#join-result-total-rides").text(addCommas(data['numRides']));
+            $("#join-result-total-users").text(addCommas(data['numUsers']));
         },
     });
 });

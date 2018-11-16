@@ -609,6 +609,12 @@ func (s *Server) getRideCount() uint64 {
 	return count
 }
 
+func (s *Server) getUserCount() uint64 {
+	q := "Count(Range(age < 150))"
+	response, _ := s.Client.Query(s.UsersIndex.RawQuery(q), nil)
+	return uint64(response.Result().Count())
+}
+
 func (s *Server) HandlePredefined5(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 
@@ -716,10 +722,11 @@ func (s *Server) HandleJoin(w http.ResponseWriter, r *http.Request) {
 	dif := time.Since(start)
 	fmt.Println("RESP: ", resp)
 
-	mresp := intersectResponse{
+	mresp := joinResponse{
 		Rows:     []intersectRow{{Count: uint64(resp.Result().Count())}},
 		Seconds:  dif.Seconds(),
 		NumRides: s.getRideCount(),
+		NumUsers: s.getUserCount(),
 	}
 	if len(userIDs) == 0 {
 		mresp.Rows[0].Count = 0
@@ -748,4 +755,11 @@ func (s *Server) genJoin(userIDs []uint64) string {
 type joinRequest struct {
 	UserQuery string `json:"user_query"`
 	RideQuery string `json:"ride_query"`
+}
+
+type joinResponse struct {
+	Rows     []intersectRow `json:"rows"`
+	Seconds  float64        `json:"seconds"`
+	NumRides uint64         `json:"numRides"`
+	NumUsers uint64         `json:"numUsers"`
 }
