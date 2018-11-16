@@ -734,12 +734,38 @@ func (s *Server) HandleJoin(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("RESP: ", resp)
 
 	mresp := joinResponse{
-		Rows:         []intersectRow{{Count: uint64(resp.Result().Count())}},
 		Seconds:      dif.Seconds(),
 		TotalRides:   s.getRideCount(),
 		TotalUsers:   s.getUserCount(),
 		MatchedUsers: uint64(matchedUsersCount),
+		MatchedRides: uint64(resp.Result().Count()),
 	}
+
+	joinGrid := true
+	if joinGrid {
+		gridQuery := "TopN(pickup_grid_id, Intersect(" + userEventQuery + ", " + jr.RideQuery + "))"
+		if len(gridQuery) > 300 {
+			fmt.Printf("%s ... %s\n", gridQuery[:300], gridQuery[len(gridQuery)-300:])
+		} else {
+			fmt.Println(gridQuery)
+		}
+		start := time.Now()
+		gResp, err := s.Client.Query(s.Index.RawQuery(gridQuery))
+		gridDif := time.Since(start)
+		mresp.Seconds += gridDif.Seconds()
+		if err != nil {
+			log.Printf("query %v failed with: %v", gridQuery, err)
+		}
+		log.Printf("grid query in %f sec\n", gridDif.Seconds())
+		mresp.Rows = make([]predefined5Row, 0, 5)
+		// fmt.Printf("topn rows[0]: %+v\n", gResp.Result().CountItems()[0])
+		for _, c := range gResp.Result().CountItems() {
+			x := c.ID % 100
+			y := c.ID / 100
+			mresp.Rows = append(mresp.Rows, predefined5Row{c.ID, c.Count, x, y})
+		}
+	}
+
 	if len(userIDs) == 0 {
 		mresp.Rows[0].Count = 0
 	}
@@ -770,9 +796,10 @@ type joinRequest struct {
 }
 
 type joinResponse struct {
-	Rows         []intersectRow `json:"rows"`
-	Seconds      float64        `json:"seconds"`
-	TotalRides   uint64         `json:"totalRides"`
-	TotalUsers   uint64         `json:"totalUsers"`
-	MatchedUsers uint64         `json:"matchedUsers"`
+	Rows         []predefined5Row `json:"rows"`
+	Seconds      float64          `json:"seconds"`
+	TotalRides   uint64           `json:"totalRides"`
+	TotalUsers   uint64           `json:"totalUsers"`
+	MatchedUsers uint64           `json:"matchedUsers"`
+	MatchedRides uint64           `json:"matchedRides"`
 }

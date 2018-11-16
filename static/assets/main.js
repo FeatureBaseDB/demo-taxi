@@ -58,6 +58,13 @@ $("#joinForm").bind('submit', function(event) {
             $("#join-result-user-count").text(addCommas(data['matchedUsers']));
             $("#join-result-total-rides").text(addCommas(data['totalRides']));
             $("#join-result-total-users").text(addCommas(data['totalUsers']));
+            clearPlot("#join-plot-container");
+            if(data['rows'].length > 1 && 'count' in data['rows'][0]) {
+                renderHistogram(data['rows'], "#join-plot-container");
+                log("join histogram from " + data['rows'].length + " rows", 1)
+            } else {
+                log("no join data for histogram", 2);
+            }
         },
     });
 });
