@@ -518,7 +518,93 @@ function makeJoinTabDisp() {
     };
 }
 
+function rangify(vals) {
+    // convert list of ints to list of ranges
+    // [2, 3, 4, 5, 6, 10, 14, 15, 16, 20] -> [[2, 6], [10], [14, 16], [20]]
+    ranges = [];
+    if(vals.length == 0) {
+        return ranges;
+    }
+    range = [parseInt(vals[0]), parseInt(vals[0])];
+    for(var i=1; i<vals.length; i++) {
+        if(parseInt(vals[i]) == range[1]+1) {
+            range[1] = parseInt(vals[i]);
+        } else {
+            ranges.push(range);
+            range = [parseInt(vals[i]), parseInt(vals[i])];
+        }
+    }
+    ranges.push(range);
+    return ranges;
+}
+
+function test_rangify() {
+    inp = [2, 3, 4, 5, 6, 10, 14, 15, 16, 20, 21];
+    exp = [[2, 6], [10, 10], [14, 16], [20, 21]];
+    inp = [0, 1];
+    exp = [[0, 1]];
+    console.log(inp);
+    console.log(rangify(inp));
+    console.log(exp);
+}
+
+test_rangify();
+
 function getIntersectQuery(tab, fields, indent, newline) {
+    var toIntersect = [];
+    for(var field in fields) {
+        el = $("#" + tab + "-" + field);
+        var val = el.val();
+        if (!val) {
+            continue;
+        }
+        var toUnion = [];
+        if(field == "age") {
+            if(val != [""]) {
+                ranges = rangify(val);
+                range_clauses = [];
+                for(var r=0; r<ranges.length; r++) {
+                    if(ranges[r][0] == ranges[r][1]) {
+                        range_clauses.push("Range(" + field + "==" + ranges[r][0] + ")");
+                    } else {
+                    range_clauses.push("Range(" + ranges[r][0] + "<=" + field + "<=" + ranges[r][1] + ")");
+                    }
+                }
+                range_clause = range_clauses.join(", " + newline + indent + indent);
+                toIntersect.push(indent + "Union(" + newline + indent + indent + range_clause + newline + indent + ")");
+            }
+        } else {
+            for (var i = 0; i < val.length; i++) {
+                if (!val[i]) {
+                    continue;
+                }
+                if(field == "title" || field == "allergies") {
+                    id = user_fields[field];
+                    q = "Row(" + field + "='" + user_field_controls[id]["row_map"][val[i]] + "')";
+                } else {
+                    q = "Row(" + field + "=" + val[i] + ")";
+                }
+                toUnion.push(indent + q);
+
+            }
+        }
+
+        if (toUnion.length == 1) {
+            toIntersect.push(toUnion[0]);
+        }
+        else if (toUnion.length > 1) {
+            toIntersect.push(indent + "Union(" + newline + indent + toUnion.join("," + newline + indent) + newline + indent + ")");
+        }
+    }
+
+    q = "";
+    if (toIntersect.length > 0) {
+        q = "Intersect(" + newline + toIntersect.join(", " + newline) + newline + ")";
+    }
+    return q;
+}
+
+function getIntersectQueryOld(tab, fields, indent, newline) {
     var toIntersect = [];
     for (var field in fields) {
         el = $("#" + tab + "-" + field);
