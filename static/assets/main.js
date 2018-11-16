@@ -46,9 +46,10 @@ $("#joinForm").bind('submit', function(event) {
             $("#join-result-user-query").html(req_disp["user_query"]);
             $("#join-result-ride-query").html(req_disp["ride_query"]);
             $("#join-result-latency").text(data['seconds'].toString().substring(0,5) + ' sec');
-            $("#join-result-count").text(addCommas(data['rows'][0].count) + ' rides');
-            $("#join-result-total-rides").text(addCommas(data['numRides']));
-            $("#join-result-total-users").text(addCommas(data['numUsers']));
+            $("#join-result-ride-count").text(addCommas(data['rows'][0].count));
+            $("#join-result-user-count").text(addCommas(data['matchedUsers']));
+            $("#join-result-total-rides").text(addCommas(data['totalRides']));
+            $("#join-result-total-users").text(addCommas(data['totalUsers']));
         },
     });
 });
@@ -561,7 +562,9 @@ function getIntersectQuery(tab, fields, indent, newline) {
         }
         var toUnion = [];
         if(field == "age") {
-            if(val[0] != "") {
+            if(val[0] == "" || val == [] || !val || val.length == 0) {
+                // skip
+            } else {
                 ranges = rangify(val);
                 toUnionR = [];
                 for(var r=0; r<ranges.length; r++) {

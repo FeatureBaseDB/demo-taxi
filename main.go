@@ -708,11 +708,22 @@ func (s *Server) HandleJoin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userIDs := resp.Result().Row().Columns
-	fmt.Println("Count userIDs ", len(userIDs))
+	matchedUsersCount := len(userIDs)
+	fmt.Println("Count userIDs ", matchedUsersCount)
 	userEventQuery := s.genJoin(userIDs)
-	log.Printf("user event query len: %d, first: %s\n\n", len(userEventQuery), userEventQuery[:300])
+	if len(userEventQuery) > 300 {
+		log.Printf("user event query len: %d, first: %s\n\n", len(userEventQuery), userEventQuery[:300])
+	} else {
+		log.Printf("user event query len: %d, %s\n\n", len(userEventQuery), userEventQuery)
+	}
+
 	fullQuery := "Count(Intersect(" + userEventQuery + ", " + jr.RideQuery + "))"
-	log.Printf("full query len: %d, first: %s\nlast: %s", len(fullQuery), fullQuery[:300], fullQuery[len(fullQuery)-300:])
+	if len(fullQuery) > 300 {
+		log.Printf("full query len: %d, first: %s  last: %s\n", len(fullQuery), fullQuery[:300], fullQuery[len(fullQuery)-300:])
+	} else {
+		log.Printf("full query len: %d, %s\n", len(fullQuery), fullQuery)
+	}
+
 	resp, err = s.Client.Query(s.Index.RawQuery(fullQuery))
 	if err != nil {
 		log.Printf("ERROR QUERYING rides: %v", err.Error())
@@ -723,10 +734,11 @@ func (s *Server) HandleJoin(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("RESP: ", resp)
 
 	mresp := joinResponse{
-		Rows:     []intersectRow{{Count: uint64(resp.Result().Count())}},
-		Seconds:  dif.Seconds(),
-		NumRides: s.getRideCount(),
-		NumUsers: s.getUserCount(),
+		Rows:         []intersectRow{{Count: uint64(resp.Result().Count())}},
+		Seconds:      dif.Seconds(),
+		TotalRides:   s.getRideCount(),
+		TotalUsers:   s.getUserCount(),
+		MatchedUsers: uint64(matchedUsersCount),
 	}
 	if len(userIDs) == 0 {
 		mresp.Rows[0].Count = 0
@@ -758,8 +770,9 @@ type joinRequest struct {
 }
 
 type joinResponse struct {
-	Rows     []intersectRow `json:"rows"`
-	Seconds  float64        `json:"seconds"`
-	NumRides uint64         `json:"numRides"`
-	NumUsers uint64         `json:"numUsers"`
+	Rows         []intersectRow `json:"rows"`
+	Seconds      float64        `json:"seconds"`
+	TotalRides   uint64         `json:"totalRides"`
+	TotalUsers   uint64         `json:"totalUsers"`
+	MatchedUsers uint64         `json:"matchedUsers"`
 }
