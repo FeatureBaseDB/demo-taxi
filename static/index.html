@@ -17,10 +17,10 @@
 		<div class="container">
 			<ul class="nav nav-tabs" role="tablist">
 				<li class="nav-item">
-					  <a class="nav-link active" data-toggle="tab" href="#intersect" role="tab">Intersect</a>
+					  <a class="nav-link" data-toggle="tab" href="#intersect" role="tab">Intersect</a>
 				</li>
 				<li class="nav-item">
-					  <a class="nav-link" data-toggle="tab" href="#join" role="tab">Join</a>
+					  <a class="nav-link active" data-toggle="tab" href="#join" role="tab">Join</a>
 				</li>
 				<li class="nav-item">
 					<a class="nav-link" data-toggle="tab" href="#topn" role="tab">TopN</a>
@@ -33,7 +33,7 @@
 			<div class="tab-content">
 <!-- intersect section -->
 
-				<div class="tab-pane active" id="intersect" role="tabpanel">
+				<div class="tab-pane" id="intersect" role="tabpanel">
 					<div class="container">
 						<form id="intersectForm" action=".">
 							<div class="row">
@@ -76,7 +76,7 @@
 
         <!-- join section -->
 
-				<div class="tab-pane" id="join" role="tabpanel">
+				<div class="tab-pane active" id="join" role="tabpanel">
 					  <div class="container">
 						    <form id="joinForm" action=".">
 							      <div class="row">
@@ -89,27 +89,31 @@
 										            <div id="joinResults" class="container" style="display:none">
 											              <h3>Results</h3>
 											              <div class="row">
-												                <div class="col-sm-2">Latency</div>
-												                <div id="join-result-latency" class="col-sm-10 result-value"></div>
+												                <div class="col-sm-4">Latency</div>
+												                <div id="join-result-latency" class="col-sm-8 result-value"></div>
 											              </div>
 											              <div class="row">
-												                <div class="col-sm-2">Count</div>
-												                <div id="join-result-count" class="col-sm-10 result-value"></div>
+												                <div class="col-sm-4">Count</div>
+												                <div id="join-result-count" class="col-sm-8 result-value"></div>
 											              </div>
 											              <div class="row">
-												                <div class="col-sm-2">Total</div>
-												                <div id="join-result-total" class="col-sm-10 result-value"></div>
+												                <div class="col-sm-4">Total Users</div>
+												                <div id="join-result-total-users" class="col-sm-8 result-value"></div>
 											              </div>
 											              <div class="row">
-												                <div class="col-sm-6">User Query</div>
-												                <div class="col-sm-6"></div>
+												                <div class="col-sm-4">Total Rides</div>
+												                <div id="join-result-total-rides" class="col-sm-8 result-value"></div>
+											              </div>
+											              <div class="row">
+												                <div class="col-sm-4">User Query</div>
+												                <div class="col-sm-8"></div>
 											              </div>
 											              <div class="row">
 												                <div id="join-result-user-query" class="col-sm-12 result-value result-query"></div>
 											              </div>
 											              <div class="row">
-												                <div class="col-sm-6">Ride Query</div>
-												                <div class="col-sm-6"></div>
+												                <div class="col-sm-4">Ride Query</div>
+												                <div class="col-sm-8"></div>
 											              </div>
 											              <div class="row">
 												                <div id="join-result-ride-query" class="col-sm-12 result-value result-query"></div>

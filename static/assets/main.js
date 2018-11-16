@@ -560,18 +560,24 @@ function getIntersectQuery(tab, fields, indent, newline) {
         }
         var toUnion = [];
         if(field == "age") {
-            if(val != [""]) {
+            if(val[0] != "") {
                 ranges = rangify(val);
-                range_clauses = [];
+                toUnionR = [];
                 for(var r=0; r<ranges.length; r++) {
+                    console.log(ranges[r]);
                     if(ranges[r][0] == ranges[r][1]) {
-                        range_clauses.push("Range(" + field + "==" + ranges[r][0] + ")");
+                        toUnionR.push("Range(" + field + "==" + ranges[r][0] + ")");
                     } else {
-                    range_clauses.push("Range(" + ranges[r][0] + "<=" + field + "<=" + ranges[r][1] + ")");
+                        toUnionR.push("Range(" + ranges[r][0] + "<=" + field + "<=" + ranges[r][1] + ")");
                     }
+                    console.log(toUnionR);
                 }
-                range_clause = range_clauses.join(", " + newline + indent + indent);
-                toIntersect.push(indent + "Union(" + newline + indent + indent + range_clause + newline + indent + ")");
+                if(toUnionR.length == 1) {
+                    toIntersect.push(indent + toUnionR[0]);
+                } else {
+                    toUnionR = toUnionR.join(", " + newline + indent + indent);
+                    toIntersect.push(indent + "Union(" + newline + indent + indent + toUnionR + newline + indent + ")");
+                }
             }
         } else {
             for (var i = 0; i < val.length; i++) {
