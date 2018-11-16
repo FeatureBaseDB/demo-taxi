@@ -1,11 +1,5 @@
 var VERBOSITY = 5;
 
-function log(m, v) {
-    if(v <= VERBOSITY) {
-        console.log(m);
-    }
-}
-
 $("#intersectForm").bind('submit', function(event) {
     event.preventDefault();
     var query = makeIntersectTabQuery();
@@ -13,13 +7,15 @@ $("#intersectForm").bind('submit', function(event) {
         log("No query.", 1);
         return
     }
-    console.log("Q", query);
+    log("intersect query", 1);
+    log(query, 1);
     doAjax('query', query, function(data) {
         if (data.error) {
             log("QError:" + data.error, 1);
             $('#intersectResults').hide();
         } else {
             $('#intersectResults').show();
+            log("intersect query successful", 1);
         }
         $("#intersect-result-query").html(query);
         $("#intersect-result-latency").text(data['seconds'].toString().substring(0,5) + ' sec');
@@ -33,35 +29,38 @@ $("#joinForm").bind('submit', function(event) {
     var req = makeJoinTabRequest();
     var req_disp = makeJoinTabDisp();
     if (!req["user_query"] || !req["ride_query"]) {
-        console.log("Incomplete request.");
+        log("Incomplete request.", 1);
         return
     }
-    console.log(req);
+    log("join query", 1)
+    log(req, 1);
     $.ajax({
         url: "query/join",
         type: 'post',
         dataType: 'json',
         data: req,
         success: function(data) {
+            log("join response", 2);
+            log(data, 2);
             if (data.error) {
-                console.log("QError", data.error);
+                log("QError: " + data.error, 1);
                 $('#joinResults').hide();
             } else {
                 $('#joinResultsPlaceholder').hide();
                 $('#joinResults').show();
+                log("join query successful", 1);
             }
-            console.log(data)
             $("#join-result-user-query").html(req_disp["user_query"]);
             $("#join-result-ride-query").html(req_disp["ride_query"]);
             $("#join-result-latency").text(data['seconds'].toString().substring(0,5) + ' sec');
-            $("#join-result-ride-count").text(addCommas(data['rows'][0].count));
+            $("#join-result-ride-count").text(addCommas(data['matchedRides']));
             $("#join-result-user-count").text(addCommas(data['matchedUsers']));
             $("#join-result-total-rides").text(addCommas(data['totalRides']));
             $("#join-result-total-users").text(addCommas(data['totalUsers']));
             clearPlot("#join-plot-container");
             if(data['rows'].length > 1 && 'count' in data['rows'][0]) {
                 renderHistogram(data['rows'], "#join-plot-container");
-                log("join histogram from " + data['rows'].length + " rows", 1)
+                log("join histogram from " + data['rows'].length + " rows", 1);
             } else {
                 log("no join data for histogram", 2);
             }
@@ -75,7 +74,7 @@ $("#topn").bind('submit', function(event) {
     $('#topnResults').hide()
     var data = $('#topNForm').serialize()
     doAjax('query/topn', data, function(data) {
-        console.log(data);
+        log(data, 2);
         if (data.error) {
             $('#topnResults').hide()
         } else {
@@ -124,7 +123,7 @@ $("#p5").click(function(event) {
 function predefined(url, data) {
     $('#predefinedResults').hide()
     return doAjax(url, data, function(data) {
-        console.log(data);
+        log(data, 2);
         if (data.error) {
             $('#predefinedResults').hide()
         } else {
@@ -155,7 +154,7 @@ function predefined(url, data) {
         table.append(tbody);
         $("#predefined-result-table").html(table);
 
-        clearPlot("#predefined-plot-container");        
+        clearPlot("#predefined-plot-container");
         if(data['rows'].length > 1 && 'count' in data['rows'][0]) {
             renderHistogram(data['rows'], "#predefined-plot-container");
         }
@@ -194,7 +193,7 @@ function clearPlot(selector) {
 }
 
 function renderHistogram(rows, selector) {
-    console.log('renderHistogram enter')
+    log('renderHistogram enter', 5)
     if(Object.keys(rows[0]).length == 2) {
         keys = Object.keys(rows[0])
         for(var key in rows[0]) {
@@ -203,17 +202,13 @@ function renderHistogram(rows, selector) {
             }
         }
 
-        console.log(xkey)
+        log(xkey, 5)
         // expects rows like [{xkey: 10, 'count': 100}, ...]
         hist1D(rows, xkey, selector)
     } else if('x' in rows[0] && 'y' in rows[0]) {
         // expects rows like [{'x': 30, 'y': 70, 'count': 100}, ...] 
         hist2D(rows, selector)
     }
-}
-
-function addCommas(intNum) {
-    return (intNum + '').replace(/(\d)(?=(\d{3})+$)/g, '$1,');
 }
 
 function startup() {
@@ -236,10 +231,10 @@ function populate_version() {
 }
 
 function populate_join_form() {
+    log("populate join form", 1);
     tab = "join";
     el = $("#join-form-col");
-    console.log(el);
-    console.log("populate join");
+    log("join form el[0].id: " + el[0].id, 6);
     width = 3;
     colID = 0;
     row = $('<div class="form-group row">');
@@ -308,9 +303,10 @@ function populate_join_form() {
 }
 
 function populate_intersect_form() {
+    log('populate intersect form', 1);
     tab = "intersect";
     el = $("#intersect-form-col");
-    console.log(el);
+    log("intersect form el[0].id:  " + el[0].id, 6);
     width = 3;
     colID = 0;
     row = $('<div class="form-group row">');
@@ -406,7 +402,7 @@ function create_cell_from_map(field_control, tab) {
 
     sel.append($("<option>"));
     for(k in field_control['row_map']) {
-        //console.log(k, field_control['row_map'][k]);
+        //log(k + " " + field_control['row_map'][k], 5);
         sel.append($("<option>", {value: k, text: field_control['row_map'][k]}));
     }
     return div;
@@ -462,7 +458,7 @@ function create_cell_from_sequence(field_control, tab) {
         val_max = row_max;
     }
     val_step = row_step * (val_max - val_min) / (row_max - row_min);
-    console.log('val step: ' + val_step);
+    log('val step: ' + val_step, 6);
 
     sel.append($("<option>"));
     for(n=0; n<num_elements; n++) {
@@ -477,13 +473,13 @@ function create_cell_from_sequence(field_control, tab) {
 
 
 function populate_topn_form() {
-    console.log("populate_topn_form");
+    log("populate_topn_form", 1);
     el = $('#field');
-    console.log(el);
+    log("topn form el id: " + el[0].id, 5);
     for (n=0; n<ride_field_controls.length; n++) {
         if ("field" in ride_field_controls[n]) {
             el.append('<option value="' + ride_field_controls[n]['field']+ '">' + ride_field_controls[n]['name'] + '</option>');
-            // console.log(ride_field_controls[n]['field']);
+            // log(ride_field_controls[n]['field'], 5);
         } else if ("logo" in ride_field_controls[n]) {
             el.append('<option disabled="disabled">----</option>');
         }
@@ -535,37 +531,18 @@ function makeJoinTabDisp() {
     };
 }
 
-function rangify(vals) {
-    // convert list of ints to list of ranges
-    // [2, 3, 4, 5, 6, 10, 14, 15, 16, 20] -> [[2, 6], [10], [14, 16], [20]]
-    ranges = [];
-    if(vals.length == 0) {
-        return ranges;
-    }
-    range = [parseInt(vals[0]), parseInt(vals[0])];
-    for(var i=1; i<vals.length; i++) {
-        if(parseInt(vals[i]) == range[1]+1) {
-            range[1] = parseInt(vals[i]);
-        } else {
-            ranges.push(range);
-            range = [parseInt(vals[i]), parseInt(vals[i])];
-        }
-    }
-    ranges.push(range);
-    return ranges;
+// TODO
+function getRangeFieldPQL(el) {
+
 }
 
-function test_rangify() {
-    inp = [2, 3, 4, 5, 6, 10, 14, 15, 16, 20, 21];
-    exp = [[2, 6], [10, 10], [14, 16], [20, 21]];
-    inp = [0, 1];
-    exp = [[0, 1]];
-    console.log(inp);
-    console.log(rangify(inp));
-    console.log(exp);
+function getStringFieldPQL(el) {
+
 }
 
-test_rangify();
+function getSetFieldPQL(el) {
+
+}
 
 function getIntersectQuery(tab, fields, indent, newline) {
     var toIntersect = [];
@@ -583,13 +560,13 @@ function getIntersectQuery(tab, fields, indent, newline) {
                 ranges = rangify(val);
                 toUnionR = [];
                 for(var r=0; r<ranges.length; r++) {
-                    console.log(ranges[r]);
+                    log("current range: " + ranges[r], 6);
                     if(ranges[r][0] == ranges[r][1]) {
                         toUnionR.push("Range(" + field + "==" + ranges[r][0] + ")");
                     } else {
                         toUnionR.push("Range(" + ranges[r][0] + "<=" + field + "<=" + ranges[r][1] + ")");
                     }
-                    console.log(toUnionR);
+                    log("range toUnion" + toUnionR, 6);
                 }
                 if(toUnionR.length == 1) {
                     toIntersect.push(indent + toUnionR[0]);
