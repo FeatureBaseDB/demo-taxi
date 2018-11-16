@@ -758,9 +758,9 @@ func (s *Server) genJoin(userIDs []uint64) string {
 		return ""
 	}
 	for _, uid := range userIDs[:len(userIDs)-1] {
-		b.WriteString(fmt.Sprintf("Row(user_id=%d),", uid))
+		b.WriteString(fmt.Sprintf("Row(user_id2=%d),", uid))
 	}
-	b.WriteString(fmt.Sprintf("Row(user_id=%d))", userIDs[len(userIDs)-1]))
+	b.WriteString(fmt.Sprintf("Row(user_id2=%d))", userIDs[len(userIDs)-1]))
 	return b.String()
 }
 
