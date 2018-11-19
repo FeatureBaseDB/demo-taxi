@@ -24,11 +24,8 @@ install-go:
 
 ## COMMON
 
-define require
-	$(if $(shell which $1 2>/dev/null),
-		$(info Verified build dependency "$1" is installed.),
-		$(error Build dependency "$1" not installed. To install, try `make install-$1`))
-endef
-
 require-%:
-	$(call require,$*)
+	$(if $(shell which $* 2>/dev/null),\
+		$(info Verified build dependency "$*" is installed.),\
+		$(error Build dependency "$*" not installed. To install, try `make install-$*`))
+
