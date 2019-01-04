@@ -5,7 +5,7 @@ install-statik:
 	go get -u github.com/rakyll/statik
 
 # installs demo-taxi binary in $GOPATH/bin
-install: require-go require-statik
+install: require-go require-statik vendor
 	go generate
 	go install
 
@@ -13,7 +13,7 @@ install: require-go require-statik
 ## COMMON (go)
 
 # Set up vendor directory using `dep`
-vendor: Gopkg.toml require-dep
+vendor: Gopkg.toml Gopkg.lock require-dep
 	dep ensure -vendor-only
 	touch vendor
 
