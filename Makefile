@@ -1,21 +1,18 @@
 .PHONY: require-% install-statik install
 
+export GO111MODULE=on
+
 # Installs statik.
 install-statik:
 	go get -u github.com/rakyll/statik
 
 # installs demo-taxi binary in $GOPATH/bin
-install: require-go require-statik vendor
+install: require-go require-statik
 	go generate
 	go install
 
 
 ## COMMON (go)
-
-# Set up vendor directory using `dep`
-vendor: Gopkg.toml Gopkg.lock require-dep
-	dep ensure -vendor-only
-	touch vendor
 
 # Prints instructions for installing go
 install-go:
