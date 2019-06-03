@@ -16,7 +16,7 @@ In addition, the open file limit may need to expanded in some cases. If you are 
 
 
 # run demo app
-'cd $GOPATH`
+`cd $GOPATH`
 
 `git clone https://github.com/pilosa/demo-taxi.git`
 
