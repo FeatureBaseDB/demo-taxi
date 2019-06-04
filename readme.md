@@ -16,6 +16,7 @@ Be aware that `pdk fakeusers --num=10000` will ouput the following error:
 `2019/06/03 08:49:11 starting field import for firstname: translating records row keys: Key 'V7CIKML6' does not exist in the rowKey to ID map`
 
 `2019/06/03 08:49:11 starting field import for lastname: translating records row keys: Key 'IRPBI3PTLH' does not exist in the rowKey to ID map`
+
 Also be aware that `pdk weather` will take approximately 5 minutes and will output the following errors:
 `couldn't get weather data for 2009-02-01 23:00:00 +0000 UTC: hour not found`
 `couldn't get weather data for 2009-02-02 00:00:00 +0000 UTC: hour not found`
@@ -28,6 +29,7 @@ Also be aware that `pdk weather` will take approximately 5 minutes and will outp
 `couldn't get weather data for 2013-08-27 02:00:00 +0000 UTC: hour not found`
 `couldn't get weather data for 2013-08-27 18:00:00 +0000 UTC: hour not found`
 `couldn't get weather data for 2013-08-29 11:00:00 +0000 UTC: hour not found`
+
 These errors will not affect the overall performance of the demo.
 
 For more information on `pdk taxi`, visit: https://github.com/pilosa/pdk.
