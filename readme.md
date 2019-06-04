@@ -19,15 +19,25 @@ Be aware that `pdk fakeusers --num=10000` will ouput the following error:
 
 Also be aware that `pdk weather` will take approximately 5 minutes and will output the following errors:
 `couldn't get weather data for 2009-02-01 23:00:00 +0000 UTC: hour not found`
+
 `couldn't get weather data for 2009-02-02 00:00:00 +0000 UTC: hour not found`
+
 `couldn't get weather data for 2009-02-03 03:00:00 +0000 UTC: hour not found`
+
 `couldn't get weather data for 2009-02-12 05:00:00 +0000 UTC: hour not found`
+
 `couldn't get weather data for 2013-08-15 19:00:00 +0000 UTC: hour not found`
+
 `couldn't get weather data for 2013-08-24 05:00:00 +0000 UTC: hour not found`
+
 `couldn't get weather data for 2013-08-25 04:00:00 +0000 UTC: hour not found`
+
 `couldn't get weather data for 2013-08-26 02:00:00 +0000 UTC: hour not found`
+
 `couldn't get weather data for 2013-08-27 02:00:00 +0000 UTC: hour not found`
+
 `couldn't get weather data for 2013-08-27 18:00:00 +0000 UTC: hour not found`
+
 `couldn't get weather data for 2013-08-29 11:00:00 +0000 UTC: hour not found`
 
 These errors will not affect the overall performance of the demo.
